@@ -1,18 +1,24 @@
 from commodutil import dates
 default_line_col = 'khaki'
 
+# try to put deeper colours for recent years, lighter colours for older years
 year_col_map = {
-    -5: 'darkorchid',
-    -4: 'purple',
-    -3: 'blue',
-    -2: 'green',
-    -1: 'orange',
+    -10: 'wheat',
+    -9: 'burlywood',
+    -8: 'steelblue',
+    -7: 'aquamarine',
+    -6: 'coral',
+    -5: 'yellow',
+    -4: 'saddlebrown',
+    -3: 'mediumblue',
+    -2: 'darkgreen',
+    -1: 'orangered',
     0: 'black',
     1: 'red',
-    2: 'orangered',
-    3: 'paleturquoise',
+    2: 'firebrick',
+    3: 'darkred',
+    4: 'crimson',
 }
-
 
 """
 Given a year, calculate a consistent line colour across charts
