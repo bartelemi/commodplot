@@ -49,9 +49,8 @@ def seas_line_plot(df, fwd=None, title=None, yaxis_title=None, inc_change_sum=Tr
 """
 def forward_history_plot(df, title=None):
     df = df.rename(columns={x:x.strftime('%d-%b') for x in df.columns}) # make nice labels for legend eg 05-Dec
-
-    df = df[df.columns[::-1]] # reverse sort columns so newest curve is first (and hence darkest line)
-    fig = df.iplot(title=title, colorscale='Blues')
+    # df = df[df.columns[::-1]] # reverse sort columns so newest curve is first (and hence darkest line)
+    fig = df.iplot(title=title, colorscale='-Blues')
     return fig
 
 

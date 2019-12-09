@@ -7,12 +7,12 @@ year_col_map = {
     -9: 'burlywood',
     -8: 'steelblue',
     -7: 'aquamarine',
-    -6: 'coral',
+    -6: 'orange',
     -5: 'yellow',
     -4: 'saddlebrown',
     -3: 'mediumblue',
     -2: 'darkgreen',
-    -1: 'orangered',
+    -1: 'coral',
     0: 'black',
     1: 'red',
     2: 'firebrick',
@@ -30,6 +30,22 @@ def get_year_line_col(year):
     delta = year - dates.curyear
 
     return year_col_map.get(delta, default_line_col)
+
+
+"""
+Given a dataframe with yearly columns, determine the line colour to use
+"""
+def std_yr_col(df, asdict=False):
+    yearmap = dates.find_year(df, use_delta=True)
+    colmap = {}
+    for colname, delta in yearmap.items():
+        colmap[colname] = year_col_map.get(delta, default_line_col)
+
+    if asdict:
+        return colmap
+
+    # return array of colours to use - this can be passed into cufflift iplot method
+    return [colmap[x] for x in df]
 
 
 """
