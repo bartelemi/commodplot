@@ -1,3 +1,4 @@
+import pandas as pd
 import plotly.graph_objects as go
 from commodplot import commodplotutil
 from commodutil import transforms
@@ -13,14 +14,16 @@ hist_hover_temp = '<i>%{text}</i>: $%{y:.2f}'
  Can overlay a forward curve on top of this
 """
 def seas_line_plot(df, fwd=None, title=None, yaxis_title=None, inc_change_sum=True):
+    freq = pd.infer_freq(df.index)
+
     seas = transforms.seasonailse(df)
-    seas = seas.fillna(method='ffill', limit=4) # fill in weekend, but only 4 to cover weekend/bank holidays
+    if freq != 'MS':
+        seas = seas.fillna(method='ffill', limit=4) # fill in weekend, but only 4 to cover weekend/bank holidays
 
     fig = go.Figure()
 
     text = seas.index.strftime('%d-%b')
     for col in seas.columns:
-
         fig.add_trace(
             go.Scatter(x=seas.index, y=seas[col], hoverinfo='y', name=col, hovertemplate=hist_hover_temp, text=text,
                        line=dict(color=commodplotutil.get_year_line_col(col))))
@@ -31,13 +34,14 @@ def seas_line_plot(df, fwd=None, title=None, yaxis_title=None, inc_change_sum=Tr
         title = '{}   {}'.format(title, commodplotutil.delta_summary_str(df))
 
     if fwd is not None:
-        fwdf = transforms.format_fwd(fwd, df.iloc[-1].name)
-        fwdf = transforms.seasonailse(fwdf)
+        if freq != 'MS': # don't do formatting for monthly data (historic part)
+            fwd = transforms.format_fwd(fwd, df.iloc[-1].name) # only applies for forward curves
+        fwd = transforms.seasonailse(fwd)
 
-        for col in fwdf.columns:
+        for col in fwd.columns:
             fig.add_trace(
-                go.Scatter(x=fwdf.index, y=fwdf[col], hoverinfo='y', name=col, hovertemplate=hist_hover_temp, text=text,
-                           line=dict(color=commodplotutil.get_year_line_col(col), dash='dot' )))
+                go.Scatter(x=fwd.index, y=fwd[col], hoverinfo='y', name=col, hovertemplate=hist_hover_temp, text=text,
+                           line=dict(color=commodplotutil.get_year_line_col(col), dash='dot')))
 
     fig.update_layout(title=title, xaxis_title='Date', yaxis_title=yaxis_title)
 
