@@ -6,7 +6,7 @@ import cufflinks as cf
 
 cf.go_offline()
 
-hist_hover_temp = '<i>%{text}</i>: $%{y:.2f}'
+hist_hover_temp = '<i>%{text}</i>: %{y:.2f}'
 
 
 """
@@ -17,7 +17,7 @@ def seas_line_plot(df, fwd=None, title=None, yaxis_title=None, inc_change_sum=Tr
     freq = pd.infer_freq(df.index)
 
     seas = transforms.seasonailse(df)
-    if freq != 'MS':
+    if freq not in ['MS']:
         seas = seas.fillna(method='ffill', limit=4) # fill in weekend, but only 4 to cover weekend/bank holidays
 
     fig = go.Figure()
