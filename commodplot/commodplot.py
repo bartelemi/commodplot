@@ -1,4 +1,5 @@
 import pandas as pd
+import plotly.offline as pl
 import plotly.graph_objects as go
 from commodplot import commodplotutil
 from commodutil import transforms
@@ -18,7 +19,8 @@ def seas_line_plot(df, fwd=None, title=None, yaxis_title=None, inc_change_sum=Tr
 
     seas = transforms.seasonailse(df)
     if freq not in ['MS']:
-        seas = seas.fillna(method='ffill', limit=4) # fill in weekend, but only 4 to cover weekend/bank holidays
+        limit = 7 if freq.startswith('W') else 4 # weekly time series need more fills
+        seas = seas.fillna(method='ffill', limit=limit) # fill in weekend, but only 4 to cover weekend/bank holidays
 
     fig = go.Figure()
 
@@ -57,4 +59,16 @@ def forward_history_plot(df, title=None):
     fig = df.iplot(title=title, colorscale='-Blues')
     return fig
 
+
+"""
+Given a plotly figure, return it as a div
+"""
+def plhtml(fig, **kwargs):
+
+    if 'margin' in kwargs:
+        fig.update_layout(margin=kwargs['margin'])
+
+    fig.update_xaxes(automargin=True)
+    fig.update_yaxes(automargin=True)
+    return pl.plot(fig, include_plotlyjs=False, output_type='div')
 
