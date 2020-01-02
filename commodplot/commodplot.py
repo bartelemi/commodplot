@@ -53,10 +53,10 @@ def seas_line_plot(df, fwd=None, title=None, yaxis_title=None, inc_change_sum=Tr
 """
  Given a dataframe of a curve's pricing history, plot a line chart showing how it has evolved over time 
 """
-def forward_history_plot(df, title=None):
+def forward_history_plot(df, title=None, asFigure=False):
     df = df.rename(columns={x:x.strftime('%d-%b') for x in df.columns}) # make nice labels for legend eg 05-Dec
     # df = df[df.columns[::-1]] # reverse sort columns so newest curve is first (and hence darkest line)
-    fig = df.iplot(title=title, colorscale='-Blues')
+    fig = df.iplot(title=title, colorscale='-Blues', asFigure=asFigure)
     return fig
 
 
