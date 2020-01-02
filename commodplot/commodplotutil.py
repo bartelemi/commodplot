@@ -2,6 +2,9 @@ import pandas as pd
 from commodutil import dates
 default_line_col = 'khaki'
 
+# margin to use in HTML charts - make charts bigger but leave space for title
+narrow_margin = {'l':2, 'r':2, 't':30, 'b':10}
+
 # try to put deeper colours for recent years, lighter colours for older years
 year_col_map = {
     -10: 'wheat',

@@ -1,7 +1,7 @@
 import pandas as pd
 import plotly.offline as pl
 import plotly.graph_objects as go
-from commodplot import commodplotutil
+from commodplot import commodplotutil as cpu
 from commodutil import transforms
 import cufflinks as cf
 
@@ -28,12 +28,12 @@ def seas_line_plot(df, fwd=None, title=None, yaxis_title=None, inc_change_sum=Tr
     for col in seas.columns:
         fig.add_trace(
             go.Scatter(x=seas.index, y=seas[col], hoverinfo='y', name=col, hovertemplate=hist_hover_temp, text=text,
-                       line=dict(color=commodplotutil.get_year_line_col(col))))
+                       line=dict(color=cpu.get_year_line_col(col))))
 
     if title is None:
         title = ''
     if inc_change_sum:
-        title = '{}   {}'.format(title, commodplotutil.delta_summary_str(df))
+        title = '{}   {}'.format(title, cpu.delta_summary_str(df))
 
     if fwd is not None:
         if freq != 'MS': # don't do formatting for monthly data (historic part)
@@ -43,7 +43,7 @@ def seas_line_plot(df, fwd=None, title=None, yaxis_title=None, inc_change_sum=Tr
         for col in fwd.columns:
             fig.add_trace(
                 go.Scatter(x=fwd.index, y=fwd[col], hoverinfo='y', name=col, hovertemplate=hist_hover_temp, text=text,
-                           line=dict(color=commodplotutil.get_year_line_col(col), dash='dot')))
+                           line=dict(color=cpu.get_year_line_col(col), dash='dot')))
 
     fig.update_layout(title=title, xaxis_title='Date', yaxis_title=yaxis_title)
 
@@ -63,10 +63,9 @@ def forward_history_plot(df, title=None, asFigure=False):
 """
 Given a plotly figure, return it as a div
 """
-def plhtml(fig, **kwargs):
-
-    if 'margin' in kwargs:
-        fig.update_layout(margin=kwargs['margin'])
+def plhtml(fig, margin=cpu.narrow_margin, **kwargs):
+    # if 'margin' in kwargs:
+    fig.update_layout(margin=margin)
 
     fig.update_xaxes(automargin=True)
     fig.update_yaxes(automargin=True)
