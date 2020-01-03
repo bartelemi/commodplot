@@ -60,6 +60,23 @@ def forward_history_plot(df, title=None, asFigure=False):
     return fig
 
 
+def bar_line_plot(df, linecol='Total', title=None, yaxis_title=None,):
+    """
+    Give a dataframe, make a stacked bar chart along with overlaying line chart.
+    """
+    if linecol not in df:
+        df[linecol] = df.sum(1)
+
+    barcols = [x for x in df.columns if linecol not in x]
+    barspecs = {'kind': 'bar', 'barmode': 'stack', 'title': 'd', 'columns': barcols}
+    linespecs = {'kind': 'scatter', 'columns': linecol, 'color': 'black'}
+
+    fig = cf.tools.figures(df, [barspecs, linespecs]) # returns dict
+    fig = go.Figure(fig)
+    fig.update_layout(title=title, xaxis_title='Date', yaxis_title=yaxis_title)
+    return fig
+
+
 """
 Given a plotly figure, return it as a div
 """
