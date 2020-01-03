@@ -16,15 +16,16 @@ hist_hover_temp = '<i>%{text}</i>: %{y:.2f}'
 """
 def seas_line_plot(df, fwd=None, title=None, yaxis_title=None, inc_change_sum=True):
     freq = pd.infer_freq(df.index)
-
     seas = transforms.seasonailse(df)
+
+    text = seas.index.strftime('%b')
     if freq not in ['MS']:
         limit = 7 if freq.startswith('W') else 4 # weekly time series need more fills
         seas = seas.fillna(method='ffill', limit=limit) # fill in weekend, but only 4 to cover weekend/bank holidays
+        text = seas.index.strftime('%d-%b')
 
     fig = go.Figure()
 
-    text = seas.index.strftime('%d-%b')
     for col in seas.columns:
         fig.add_trace(
             go.Scatter(x=seas.index, y=seas[col], hoverinfo='y', name=col, hovertemplate=hist_hover_temp, text=text,
@@ -45,7 +46,9 @@ def seas_line_plot(df, fwd=None, title=None, yaxis_title=None, inc_change_sum=Tr
                 go.Scatter(x=fwd.index, y=fwd[col], hoverinfo='y', name=col, hovertemplate=hist_hover_temp, text=text,
                            line=dict(color=cpu.get_year_line_col(col), dash='dot')))
 
-    fig.update_layout(title=title, xaxis_title='Date', yaxis_title=yaxis_title)
+    # xaxis=go.layout.XAxis(title_font={"size": 10}), if making date label smaller
+    legend = go.layout.Legend(font=dict(size=10))
+    fig.update_layout(title=title,  xaxis_tickformat='%b', yaxis_title=yaxis_title, legend=legend)
 
     return fig
 
