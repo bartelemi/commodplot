@@ -71,7 +71,7 @@ def bar_line_plot(df, linecol='Total', title=None, yaxis_title=None,):
         df[linecol] = df.sum(1)
 
     barcols = [x for x in df.columns if linecol not in x]
-    barspecs = {'kind': 'bar', 'barmode': 'stack', 'title': 'd', 'columns': barcols}
+    barspecs = {'kind': 'bar', 'barmode': 'relative', 'title': 'd', 'columns': barcols}
     linespecs = {'kind': 'scatter', 'columns': linecol, 'color': 'black'}
 
     fig = cf.tools.figures(df, [barspecs, linespecs]) # returns dict
