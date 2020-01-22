@@ -15,12 +15,14 @@ hist_hover_temp = '<i>%{text}</i>: %{y:.2f}'
  Can overlay a forward curve on top of this
 """
 def seas_line_plot(df, fwd=None, title=None, yaxis_title=None, inc_change_sum=True):
-    freq = pd.infer_freq(df.index)
+    histfreq = pd.infer_freq(df.index)
+    if histfreq is None:
+        histfreq = 'D' # sometimes infer_freq returns null - assume mostly will be a daily series
     seas = transforms.seasonailse(df)
 
     text = seas.index.strftime('%b')
-    if freq not in ['MS']:
-        limit = 7 if freq.startswith('W') else 4 # weekly time series need more fills
+    if histfreq not in ['MS']:
+        limit = 7 if histfreq.startswith('W') else 4 # weekly time series need more fills
         seas = seas.fillna(method='ffill', limit=limit) # fill in weekend, but only 4 to cover weekend/bank holidays
         text = seas.index.strftime('%d-%b')
 
@@ -37,7 +39,9 @@ def seas_line_plot(df, fwd=None, title=None, yaxis_title=None, inc_change_sum=Tr
         title = '{}   {}'.format(title, cpu.delta_summary_str(df))
 
     if fwd is not None:
-        if freq != 'MS': # don't do formatting for monthly data (historic part)
+        fwdfreq = pd.infer_freq(fwd.index)
+        # for charts which are daily, resample the forward curve into a daily series
+        if histfreq in ['B', 'D'] and fwdfreq in ['MS', 'ME']:
             fwd = transforms.format_fwd(fwd, df.iloc[-1].name) # only applies for forward curves
         fwd = transforms.seasonailse(fwd)
 

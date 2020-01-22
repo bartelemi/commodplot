@@ -55,16 +55,17 @@ def std_yr_col(df, asdict=False):
     return [colmap[x] for x in df]
 
 
-"""
-Given a timeseries, produce a string which shows the latest change
-For example if T-1 value is 50 and T-2 is 45, return 50.00  △: +5
-"""
 def delta_summary_str(df):
-    if isinstance(df, pd.Series):
-        df = pd.DataFrame(df)
+    """
+    Given a timeseries, produce a string which shows the latest change
+    For example if T-1 value is 50 and T-2 is 45, return 50.00  △: +5
+    """
+    if isinstance(df, pd.DataFrame):
+        df = pd.Series(df[df.columns[0]])
 
-    val1 = df.tail(1).iloc[0, 0]
-    val2 = df.tail(2).head(1).iloc[0, 0 ]
+    df = df.dropna()
+    val1 = df.iloc[-1]
+    val2 = df.iloc[-2]
     delta = (val1-val2).round(2)
     symb = '+' if delta > 0.0 else ''
 
