@@ -71,3 +71,24 @@ def delta_summary_str(df):
 
     s = '{}   △: {}{}'.format(val1.round(2), symb,delta)
     return s
+
+
+def chart_row(chartset):
+    """
+    Given a set of charts, make a html row using the standard css layout used for charting hmtl pages
+    """
+    charts = ''
+
+    for chart in chartset:
+        chartbody = """
+        <div class="box{}"><p>{}</p></div>
+        """
+        charts += chartbody.format(len(chartset), chart)
+
+    res = """    
+    <div class="clearfix">
+    {}
+    </div>
+    """
+    res = res.format(charts)
+    return res
