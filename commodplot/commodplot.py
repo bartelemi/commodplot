@@ -24,9 +24,11 @@ def seas_line_plot(df, fwd=None, title=None, yaxis_title=None, inc_change_sum=Tr
     seas = transforms.seasonailse(df)
 
     text = seas.index.strftime('%b')
-    if histfreq not in ['MS']:
-        limit = 7 if histfreq.startswith('W') else 4 # weekly time series need more fills
-        seas = seas.fillna(method='ffill', limit=limit) # fill in weekend, but only 4 to cover weekend/bank holidays
+    if histfreq in ['B', 'D']:
+        seas = seas.fillna(method='ffill', limit=4)  # fill in weekend, but only 4 to cover weekend/bank holidays
+        text = seas.index.strftime('%d-%b')
+    if histfreq.startswith('W'):
+        seas = seas.fillna(method='ffill', limit=7)
         text = seas.index.strftime('%d-%b')
 
     fig = go.Figure()
