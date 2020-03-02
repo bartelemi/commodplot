@@ -14,13 +14,14 @@ hist_hover_temp = '<i>%{text}</i>: %{y:.2f}'
  Given a Dataframe produce a seasonal line plot (x-axis - Jan-Dec, y-axis Yearly lines)
  Can overlay a forward curve on top of this
 """
-def seas_line_plot(df, fwd=None, title=None, yaxis_title=None, inc_change_sum=True):
+def seas_line_plot(df, fwd=None, title=None, yaxis_title=None, inc_change_sum=True, histfreq=None):
     if isinstance(df, pd.Series):
         df = pd.DataFrame(df)
 
-    histfreq = pd.infer_freq(df.index)
     if histfreq is None:
-        histfreq = 'D' # sometimes infer_freq returns null - assume mostly will be a daily series
+        histfreq = pd.infer_freq(df.index)
+        if histfreq is None:
+            histfreq = 'D' # sometimes infer_freq returns null - assume mostly will be a daily series
     seas = transforms.seasonailse(df)
 
     text = seas.index.strftime('%b')
