@@ -24,16 +24,29 @@ year_col_map = {
     4: 'crimson',
 }
 
-"""
-Given a year, calculate a consistent line colour across charts
-"""
-def get_year_line_col(year):
+
+def get_year_line_delta(year):
     if isinstance(year, str):
         year = int(year)
 
     delta = year - dates.curyear
+    return delta
 
+
+def get_year_line_col(year):
+    """
+    Given a year, calculate a consistent line colour across charts
+    """
+    delta = get_year_line_delta(year)
     return year_col_map.get(delta, default_line_col)
+
+
+def get_year_line_width(year):
+    delta = get_year_line_delta(year)
+    if delta == 0:
+        return 3
+
+    return 2
 
 
 """

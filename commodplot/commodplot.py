@@ -37,7 +37,7 @@ def seas_line_plot(df, fwd=None, title=None, yaxis_title=None, inc_change_sum=Tr
     for col in seas.columns:
         fig.add_trace(
             go.Scatter(x=seas.index, y=seas[col], hoverinfo='y', name=col, hovertemplate=hist_hover_temp, text=text,
-                       line=dict(color=cpu.get_year_line_col(col))))
+                       line=dict(color=cpu.get_year_line_col(col), width=cpu.get_year_line_width(col))))
 
     if title is None:
         title = ''
