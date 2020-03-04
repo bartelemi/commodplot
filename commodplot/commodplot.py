@@ -95,9 +95,10 @@ Given a plotly figure, return it as a div
 """
 def plhtml(fig, margin=cpu.narrow_margin, **kwargs):
     # if 'margin' in kwargs:
-    fig.update_layout(margin=margin)
+    if fig is not None:
+        fig.update_layout(margin=margin)
 
-    fig.update_xaxes(automargin=True)
-    fig.update_yaxes(automargin=True)
-    return pl.plot(fig, include_plotlyjs=False, output_type='div')
+        fig.update_xaxes(automargin=True)
+        fig.update_yaxes(automargin=True)
+        return pl.plot(fig, include_plotlyjs=False, output_type='div')
 
