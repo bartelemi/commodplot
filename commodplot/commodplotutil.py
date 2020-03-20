@@ -86,3 +86,16 @@ def delta_summary_str(df):
     return s
 
 
+def format_date_col(col, date_format='%d-%b'):
+    """
+    Format a column heading as a data
+    :param col:
+    :param date_format:
+    :return:
+    """
+    if isinstance(col, str):
+        col = pd.to_datetime(col).strftime(date_format)
+    if isinstance(col, pd.Timestamp):
+        col.strftime(date_format)
+
+    return col
