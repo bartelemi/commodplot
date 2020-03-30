@@ -96,6 +96,6 @@ def format_date_col(col, date_format='%d-%b'):
     if isinstance(col, str):
         col = pd.to_datetime(col).strftime(date_format)
     if isinstance(col, pd.Timestamp):
-        col.strftime(date_format)
+        col = col.strftime(date_format)
 
     return col
