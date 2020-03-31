@@ -11,7 +11,7 @@ hist_hover_temp = '<i>%{text}</i>: %{y:.2f}'
 
 
 """
- Given a Dataframe produce a seasonal line plot (x-axis - Jan-Dec, y-axis Yearly lines)
+ Given a DataFrame produce a seasonal line plot (x-axis - Jan-Dec, y-axis Yearly lines)
  Can overlay a forward curve on top of this
 """
 def seas_line_plot(df, fwd=None, title=None, yaxis_title=None, inc_change_sum=True, histfreq=None):
@@ -26,10 +26,8 @@ def seas_line_plot(df, fwd=None, title=None, yaxis_title=None, inc_change_sum=Tr
 
     text = seas.index.strftime('%b')
     if histfreq in ['B', 'D']:
-        seas = seas.fillna(method='ffill', limit=4)  # fill in weekend, but only 4 to cover weekend/bank holidays
         text = seas.index.strftime('%d-%b')
     if histfreq.startswith('W'):
-        seas = seas.fillna(method='ffill', limit=7)
         text = seas.index.strftime('%d-%b')
 
     fig = go.Figure()
@@ -63,10 +61,10 @@ def seas_line_plot(df, fwd=None, title=None, yaxis_title=None, inc_change_sum=Tr
     return fig
 
 
-"""
- Given a dataframe of a curve's pricing history, plot a line chart showing how it has evolved over time 
-"""
 def forward_history_plot(df, title=None, asFigure=False):
+    """
+     Given a dataframe of a curve's pricing history, plot a line chart showing how it has evolved over time
+    """
     df = df.rename(columns={x:cpu.format_date_col(x, '%d-%b') for x in df.columns}) # make nice labels for legend eg 05-Dec
     # df = df[df.columns[::-1]] # reverse sort columns so newest curve is first (and hence darkest line)
     fig = df.iplot(title=title, colorscale='-Blues', asFigure=asFigure)
@@ -87,6 +85,23 @@ def bar_line_plot(df, linecol='Total', title=None, yaxis_title=None,):
     fig = cf.tools.figures(df, [barspecs, linespecs]) # returns dict
     fig = go.Figure(fig)
     fig.update_layout(title=title, xaxis_title='Date', yaxis_title=yaxis_title)
+    return fig
+
+
+def reindex_year_line_plot(df, title=None, yaxis_title=None, inc_change_sum=True, asFigure=False):
+    """
+    Given a dataframe of timeseries, reindex years and produce line plot
+    :param df:
+    :return:
+    """
+
+    dft = transforms.reindex_year(df)
+    dft = dft.tail(365 * 2) # normally 2 years is relevant for these type of charts
+    if inc_change_sum:
+        colsel = cpu.reindex_year_df_rel_col(dft)
+        title = '{}    {}: {}'.format(title, colsel.replace(title, ''), cpu.delta_summary_str(df[colsel]))
+
+    fig = dft.iplot(color=cpu.std_yr_col(dft), title=title, yTitle=yaxis_title, asFigure=asFigure)
     return fig
 
 

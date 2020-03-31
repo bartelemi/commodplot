@@ -99,3 +99,35 @@ def format_date_col(col, date_format='%d-%b'):
         col = col.strftime(date_format)
 
     return col
+
+
+def reindex_year_df_rel_col(df):
+    """
+    Given a reindexed year dataframe, figure out which column to use for change summary
+    Basic algorithm is use current year, unless you are 10 days from end of dataframe
+    :param df:
+    :return:
+    """
+    first_col = df.columns[0]
+
+    years = dates.find_year(df)
+    last_val_date = df.index[-1]
+
+    relcol = [x for x in df if str(dates.curyear) in x]
+    relcol = relcol[0]
+    relyear = (pd.to_datetime('{}-01-01'.format(years.get(relcol)))) # year of this column
+
+    relcol_date = df[relcol].dropna().index[-1] # last date of this column
+
+    delta = last_val_date - relcol_date
+    if delta.days < 10:
+        relyear1 = (relyear + pd.DateOffset(years=1)).year
+        relyear1 = [x for x in df if str(relyear1) in x]
+        if len(relyear1) > 0:
+            return relyear1[0]
+    else:
+        return relcol
+
+    return first_col
+
+
