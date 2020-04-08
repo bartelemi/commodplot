@@ -10,11 +10,11 @@ cf.go_offline()
 hist_hover_temp = '<i>%{text}</i>: %{y:.2f}'
 
 
-"""
- Given a DataFrame produce a seasonal line plot (x-axis - Jan-Dec, y-axis Yearly lines)
- Can overlay a forward curve on top of this
-"""
 def seas_line_plot(df, fwd=None, title=None, yaxis_title=None, inc_change_sum=True, histfreq=None):
+    """
+     Given a DataFrame produce a seasonal line plot (x-axis - Jan-Dec, y-axis Yearly lines)
+     Can overlay a forward curve on top of this
+    """
     if isinstance(df, pd.Series):
         df = pd.DataFrame(df)
 
@@ -71,12 +71,12 @@ def forward_history_plot(df, title=None, asFigure=False):
     return fig
 
 
-def bar_line_plot(df, linecol='Total', title=None, yaxis_title=None,):
+def bar_line_plot(df, linecol='Total', title=None, yaxis_title=None, yaxis_range=None):
     """
     Give a dataframe, make a stacked bar chart along with overlaying line chart.
     """
     if linecol not in df:
-        df[linecol] = df.sum(1)
+        df[linecol] = df.sum(1, skipna=False)
 
     barcols = [x for x in df.columns if linecol not in x]
     barspecs = {'kind': 'bar', 'barmode': 'relative', 'title': 'd', 'columns': barcols}
@@ -85,6 +85,8 @@ def bar_line_plot(df, linecol='Total', title=None, yaxis_title=None,):
     fig = cf.tools.figures(df, [barspecs, linespecs]) # returns dict
     fig = go.Figure(fig)
     fig.update_layout(title=title, xaxis_title='Date', yaxis_title=yaxis_title)
+    if yaxis_range is not None:
+        fig.update_layout(yaxis=dict(range=yaxis_range))
     return fig
 
 
@@ -99,16 +101,16 @@ def reindex_year_line_plot(df, title=None, yaxis_title=None, inc_change_sum=True
     dft = dft.tail(365 * 2) # normally 2 years is relevant for these type of charts
     if inc_change_sum:
         colsel = cpu.reindex_year_df_rel_col(dft)
-        title = '{}    {}: {}'.format(title, colsel.replace(title, ''), cpu.delta_summary_str(df[colsel]))
+        title = '{}    {}: {}'.format(title, str(colsel).replace(title, ''), cpu.delta_summary_str(dft[colsel]))
 
     fig = dft.iplot(color=cpu.std_yr_col(dft), title=title, yTitle=yaxis_title, asFigure=asFigure)
     return fig
 
 
-"""
-Given a plotly figure, return it as a div
-"""
 def plhtml(fig, margin=cpu.narrow_margin, **kwargs):
+    """
+    Given a plotly figure, return it as a div
+    """
     # if 'margin' in kwargs:
     if fig is not None:
         fig.update_layout(margin=margin)

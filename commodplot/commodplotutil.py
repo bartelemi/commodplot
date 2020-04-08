@@ -113,7 +113,7 @@ def reindex_year_df_rel_col(df):
     years = dates.find_year(df)
     last_val_date = df.index[-1]
 
-    relcol = [x for x in df if str(dates.curyear) in x]
+    relcol = [x for x in df if str(dates.curyear) in str(x)]
     relcol = relcol[0]
     relyear = (pd.to_datetime('{}-01-01'.format(years.get(relcol)))) # year of this column
 
