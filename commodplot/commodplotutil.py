@@ -49,10 +49,11 @@ def get_year_line_width(year):
     return 2
 
 
-"""
-Given a dataframe with yearly columns, determine the line colour to use
-"""
 def std_yr_col(df, asdict=False):
+    """
+    Given a dataframe with yearly columns, determine the line colour to use
+    """
+
     if isinstance(df, pd.Series):
         df = pd.DataFrame(df)
 
@@ -93,10 +94,14 @@ def format_date_col(col, date_format='%d-%b'):
     :param date_format:
     :return:
     """
-    if isinstance(col, str):
-        col = pd.to_datetime(col).strftime(date_format)
-    if isinstance(col, pd.Timestamp):
-        col = col.strftime(date_format)
+    try:
+        if isinstance(col, str):
+
+            col = pd.to_datetime(col).strftime(date_format)
+        if isinstance(col, pd.Timestamp):
+            col = col.strftime(date_format)
+    except Exception:
+        pass # ignore - just return original
 
     return col
 
