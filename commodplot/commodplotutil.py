@@ -49,6 +49,11 @@ def get_year_line_width(year):
     return 2
 
 
+def line_visible(year):
+    delta = get_year_line_delta(year)
+    return None if delta >= -5 else "legendonly"
+
+
 def std_yr_col(df, asdict=False):
     """
     Given a dataframe with yearly columns, determine the line colour to use
