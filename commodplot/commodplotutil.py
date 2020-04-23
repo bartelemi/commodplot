@@ -92,6 +92,30 @@ def delta_summary_str(df):
     return s
 
 
+def min_max_range(seas, shaded_range):
+    """
+    Calculate min and max for seas
+    If an int eg 5, then do curyear -1 and curyear -6
+    If list then do the years in that list eg 2012-2019
+    :param seas:
+    :param shaded_range:
+    :return:
+    """
+    if isinstance(shaded_range, int):
+        end_year = seas.columns[-2]
+        start_year = end_year - shaded_range
+    else:
+        start_year, end_year = shaded_range[0], shaded_range[1]
+
+    r = seas[[x for x in seas.columns if x >= start_year and x <= end_year]]
+    r['min'] = r.min(1)
+    r['max'] = r.max(1)
+    r = r[['min', 'max']]
+
+    rangeyr = end_year - start_year
+    return r, rangeyr
+
+
 def format_date_col(col, date_format='%d-%b'):
     """
     Format a column heading as a data

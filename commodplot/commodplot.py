@@ -10,7 +10,7 @@ cf.go_offline()
 hist_hover_temp = '<i>%{text}</i>: %{y:.2f}'
 
 
-def seas_line_plot(df, fwd=None, title=None, yaxis_title=None, inc_change_sum=True, histfreq=None):
+def seas_line_plot(df, fwd=None, title=None, yaxis_title=None, inc_change_sum=True, histfreq=None, shaded_range=None):
     """
      Given a DataFrame produce a seasonal line plot (x-axis - Jan-Dec, y-axis Yearly lines)
      Can overlay a forward curve on top of this
@@ -30,7 +30,17 @@ def seas_line_plot(df, fwd=None, title=None, yaxis_title=None, inc_change_sum=Tr
     if histfreq.startswith('W'):
         text = seas.index.strftime('%d-%b')
 
+    if title is None:
+        title = ''
+
     fig = go.Figure()
+
+    if shaded_range is not None:
+        r, rangeyr = cpu.min_max_range(seas, shaded_range)
+        fig.add_trace(go.Scatter(x=r.index, y=r['max'].values, fill=None, name='%syr Max' % rangeyr, mode='lines',
+                                 line_color='lightsteelblue', line_width=0.1))
+        fig.add_trace(go.Scatter(x=r.index, y=r['min'].values, fill='tonexty', name='%syr Min' % rangeyr, mode='lines',
+                                 line_color='lightsteelblue', line_width=0.1))
 
     for col in seas.columns:
         fig.add_trace(
