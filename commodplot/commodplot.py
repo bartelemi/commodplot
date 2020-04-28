@@ -129,3 +129,4 @@ def plhtml(fig, margin=cpu.narrow_margin, **kwargs):
         fig.update_yaxes(automargin=True)
         return pl.plot(fig, include_plotlyjs=False, output_type='div')
 
+    return ''
