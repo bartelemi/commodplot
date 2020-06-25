@@ -71,6 +71,48 @@ def seas_line_plot(df, fwd=None, title=None, yaxis_title=None, inc_change_sum=Tr
     return fig
 
 
+def seas_table(hist, fwd):
+    hist = hist.resample('MS').mean()
+
+    if fwd.index[0] == hist.index[-1]:
+        hist = hist[:-1]
+
+    df = pd.concat([hist, fwd], sort=False)
+    df = transforms.seasonailse(df)
+
+    summary = df.resample('Q').mean()
+    winter = summary.iloc[[0, 3], :].mean()
+    winter.name = 'Q1+Q4'
+    summer = summary.iloc[[1, 2], :].mean()
+    summer.name = 'Q2+Q3'
+    summary.index = ['Q1', 'Q2', 'Q3', 'Q4']
+    summary = summary.append(winter)
+    summary = summary.append(summer)
+    cal = df.resample('Y').mean().iloc[0]
+    cal.name = 'Year'
+    summary = summary.append(cal)
+    summary = summary.round(2)
+
+    df.index = df.index.strftime('%b')
+    df = pd.concat([df, summary], sort=False).round(2)
+
+    colsh = list(df.columns)
+    colsh.insert(0, 'Period')
+
+    cols = [df[x] for x in df]
+    cols.insert(0, list(df.index))
+    fillcolor = ['lavender'] * 12
+    fillcolor.extend(['aquamarine'] * 4)
+    fillcolor.extend(['darkturquoise'] * 2)
+    fillcolor.append('dodgerblue')
+
+    figm = go.Figure(data=[go.Table(
+        header=dict(values=colsh, fill_color='paleturquoise', align='left'),
+        cells=dict(values=cols, fill_color=[fillcolor], align='left'))
+    ])
+    return figm
+
+
 def forward_history_plot(df, title=None, asFigure=False):
     """
      Given a dataframe of a curve's pricing history, plot a line chart showing how it has evolved over time
