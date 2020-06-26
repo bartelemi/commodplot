@@ -7,7 +7,6 @@ before_script:
 stages:
   - test
 
-
 test:
   stage: Test
   script:
