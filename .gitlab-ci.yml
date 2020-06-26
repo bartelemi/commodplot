@@ -8,6 +8,6 @@ stages:
   - test
 
 test:
-  stage: Test
+  stage: test
   script:
   - python setup.py test
