@@ -8,7 +8,7 @@ stages:
   - test
 
 
-pytest:
+test:
   stage: Test
   script:
   - python setup.py test
