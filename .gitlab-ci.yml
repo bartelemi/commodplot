@@ -1,0 +1,9 @@
+image: python:3.6-alpine
+
+stages:
+  - deploy
+
+before_script:
+   - python setup.py sdist
+
+
