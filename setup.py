@@ -2,7 +2,7 @@ import setuptools
 import os
 
 setuptools.setup(
-    name="commoplot",
+    name="commodplot",
     version="1.0.4",
     author="aeorxc",
     author_email="author@example.com",
