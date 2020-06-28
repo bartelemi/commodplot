@@ -7,7 +7,7 @@ else:
     version = os.environ['CI_JOB_ID']
 
 setuptools.setup(
-    name="commodutil",
+    name="commoplot",
     version=version,
     author="aeorxc",
     author_email="author@example.com",
