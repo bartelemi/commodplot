@@ -1,5 +1,5 @@
 import unittest
-from commodutil import htmlutil
+from commodplot import htmlutil
 
 
 class TestHtmlUtil(unittest.TestCase):
