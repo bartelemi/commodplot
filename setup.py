@@ -3,7 +3,7 @@ import os
 
 setuptools.setup(
     name="commoplot",
-    version="1.0.1",
+    version="1.0.2",
     author="aeorxc",
     author_email="author@example.com",
     description="common commodity plotting including seasonal charts",
