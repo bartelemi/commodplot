@@ -1,63 +1,30 @@
-from setuptools import setup
+import setuptools
 import os
 
-# Major and minor versions
-majorVersion = 1
-minorVersion = 4
+if os.environ.get('CI_COMMIT_TAG'):
+    version = os.environ['CI_COMMIT_TAG']
+else:
+    version = os.environ['CI_JOB_ID']
 
-
-# Get build number
-def __path(filename):
-    return os.path.join(os.path.dirname(__file__), filename)
-
-
-build = 0
-if os.path.exists(__path('build.info')):
-    build = open(__path('build.info')).read().strip()
-
-versionStr = '{0}.{1}.{2}'.format(majorVersion, minorVersion, build)
-
-setup(
-    name='commodplot',
-    version=versionStr,
-    packages=['commodplot'],
-    test_suite='tests',
-    url='',
-    license='MIT',
-    author='aeorxc',
-    author_email='',
-    description='common analytics plotting',
-    # See https://pypi.python.org/pypi?%3Aaction=list_classifiers
-    classifiers=[
-        # How mature is this project? Common values are
-        #   3 - Alpha
-        #   4 - Beta
-        #   5 - Production/Stable
-        'Development Status :: 4 - Beta',
-
-        # Indicate who your project is intended for
-        'Intended Audience :: Developers',
-        'Topic :: Software Development :: Build Tools',
-
-        # Pick your license as you wish (should match "license" above)
-        'License :: OSI Approved :: MIT License',
-
-        # Specify the Python versions you support here. In particular, ensure
-        # that you indicate whether you support Python 2, Python 3 or both.
-        'Programming Language :: Python :: 2.7'
-        'Programming Language :: Python :: 3.5'
-    ],
-
-    # List additional groups of dependencies here (e.g. development
-    # dependencies). You can install these using the following syntax,
-    # for example:
-    # $ pip install -e .[dev,test]
-    extras_require={
-        'dev': ['check-manifest'],
-        'test': ['coverage'],
+setuptools.setup(
+    name="commodutil",
+    version=version,
+    author="aeorxc",
+    author_email="author@example.com",
+    description="common commodity plotting including seasonal charts",
+    url="https://github.com/aeorxc/commodplot",
+    project_urls={
+        'Source': 'https://github.com/aeorxc/commodplot',
     },
-
-    install_requires=[],
+    packages=setuptools.find_packages(),
+    classifiers=[
+        "Programming Language :: Python :: 3",
+        "License :: OSI Approved :: MIT License",
+        "Operating System :: OS Independent",
+    ],
+    install_requires=['pandas', 'cufflinks', 'plotly', 'commdutil'],
+    python_requires='>=3.6',
     setup_requires=['pytest-runner'],
     tests_require=['pytest'],
 )
+

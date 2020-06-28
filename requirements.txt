@@ -1,1 +1,4 @@
 pandas
+cufflinks
+plotly
+commodutil
