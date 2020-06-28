@@ -1,14 +1,9 @@
 import setuptools
 import os
 
-if os.environ.get('CI_COMMIT_TAG'):
-    version = os.environ['CI_COMMIT_TAG']
-else:
-    version = os.environ['CI_JOB_ID']
-
 setuptools.setup(
     name="commoplot",
-    version=version,
+    version="1.0.1",
     author="aeorxc",
     author_email="author@example.com",
     description="common commodity plotting including seasonal charts",
