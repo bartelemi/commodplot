@@ -66,6 +66,7 @@ def seas_line_plot(df, fwd=None, title=None, yaxis_title=None, inc_change_sum=Tr
 
     # xaxis=go.layout.XAxis(title_font={"size": 10}), if making date label smaller
     legend = go.layout.Legend(font=dict(size=10))
+    fig.layout.xaxis.tickvals = pd.date_range(seas.index[0], seas.index[-1], freq='MS')
     fig.update_layout(title=title,  xaxis_tickformat='%b', yaxis_title=yaxis_title, legend=legend)
 
     return fig
