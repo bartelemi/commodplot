@@ -30,9 +30,6 @@ def seas_line_plot(df, fwd=None, title=None, yaxis_title=None, inc_change_sum=Tr
     if histfreq.startswith('W'):
         text = seas.index.strftime('%d-%b')
 
-    if title is None:
-        title = ''
-
     fig = go.Figure()
 
     if shaded_range is not None:
