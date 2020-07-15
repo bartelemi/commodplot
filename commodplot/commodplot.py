@@ -157,6 +157,8 @@ def reindex_year_line_plot(df, title=None, yaxis_title=None, inc_change_sum=True
     return fig
 
 
+# TODO remove once transitioned over legacy code
+# Moved to commodplotutil
 def plhtml(fig, margin=cpu.narrow_margin, **kwargs):
     """
     Given a plotly figure, return it as a div
@@ -170,3 +172,5 @@ def plhtml(fig, margin=cpu.narrow_margin, **kwargs):
         return pl.plot(fig, include_plotlyjs=False, output_type='div')
 
     return ''
+
+
