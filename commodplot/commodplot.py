@@ -69,6 +69,36 @@ def seas_line_plot(df, fwd=None, title=None, yaxis_title=None, inc_change_sum=Tr
     return fig
 
 
+def seas_box_plot(hist, fwd=None, title=''):
+    hist = transforms.monthly_mean(hist)
+    hist = hist.T
+
+    data = []
+    for x in hist.columns:
+        trace = go.Box(
+            name=x,
+            y=hist[x]
+        )
+        data.append(trace)
+
+    fwdl = transforms.seasonailse(fwd)
+    fwdl.index = fwdl.index.strftime('%b')
+    for col in fwdl.columns:
+        ser = fwdl[col].copy()
+        trace = go.Scatter(
+            name=col,
+            x=ser.index,
+            y=ser,
+            line=dict(color=cpu.get_year_line_col(col), dash='dot')
+        )
+        data.append(trace)
+
+    fig = go.Figure(data=data)
+    fig.update_layout(title=title)
+
+    return fig
+
+
 def seas_table(hist, fwd):
     hist = hist.resample('MS').mean()
 
