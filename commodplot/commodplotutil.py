@@ -1,6 +1,7 @@
 import pandas as pd
 import plotly.graph_objects as go
 import plotly.offline as pl
+from commodutil import transforms
 from commodutil import dates
 default_line_col = 'khaki'
 
@@ -56,6 +57,33 @@ def line_visible(year):
     return None if delta >= -5 else "legendonly"
 
 
+def seas_table(hist, fwd):
+    hist = hist.resample('MS').mean()
+
+    if fwd.index[0] == hist.index[-1]:
+        hist = hist[:-1]
+
+    df = pd.concat([hist, fwd], sort=False)
+    df = transforms.seasonailse(df)
+
+    summary = df.resample('Q').mean()
+    winter = summary.iloc[[0, 3], :].mean()
+    winter.name = 'Q1+Q4'
+    summer = summary.iloc[[1, 2], :].mean()
+    summer.name = 'Q2+Q3'
+    summary.index = ['Q1', 'Q2', 'Q3', 'Q4']
+    summary = summary.append(winter)
+    summary = summary.append(summer)
+    cal = df.resample('Y').mean().iloc[0]
+    cal.name = 'Year'
+    summary = summary.append(cal)
+    summary = summary.round(2)
+
+    df.index = df.index.strftime('%b')
+    df = pd.concat([df, summary], sort=False).round(2)
+    return df
+
+
 def std_yr_col(df, asdict=False):
     """
     Given a dataframe with yearly columns, determine the line colour to use
@@ -103,13 +131,15 @@ def min_max_range(seas, shaded_range):
     :param shaded_range:
     :return:
     """
+
+    seasf = seas.rename(columns=dates.find_year(seas))
     if isinstance(shaded_range, int):
-        end_year = seas.columns[-2]
+        end_year = seasf.columns[-2]
         start_year = end_year - shaded_range
     else:
         start_year, end_year = shaded_range[0], shaded_range[1]
 
-    r = seas[[x for x in seas.columns if x >= start_year and x <= end_year]]
+    r = seasf[[x for x in seasf.columns if x >= start_year and x <= end_year]]
     r['min'] = r.min(1)
     r['max'] = r.max(1)
     r = r[['min', 'max']]

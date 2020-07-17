@@ -10,6 +10,15 @@ cf.go_offline()
 hist_hover_temp = '<i>%{text}</i>: %{y:.2f}'
 
 
+def shaded_range_traces(seas, shaded_range):
+    r, rangeyr = cpu.min_max_range(seas, shaded_range)
+    max_trace = go.Scatter(x=r.index, y=r['max'].values, fill=None, name='%syr Max' % rangeyr, mode='lines',
+                             line_color='lightsteelblue', line_width=0.1)
+    min_trace = go.Scatter(x=r.index, y=r['min'].values, fill='tonexty', name='%syr Min' % rangeyr, mode='lines',
+                             line_color='lightsteelblue', line_width=0.1)
+    return max_trace, min_trace
+
+
 def seas_line_plot(df, fwd=None, title=None, yaxis_title=None, inc_change_sum=True, histfreq=None, shaded_range=None):
     """
      Given a DataFrame produce a seasonal line plot (x-axis - Jan-Dec, y-axis Yearly lines)
@@ -33,11 +42,9 @@ def seas_line_plot(df, fwd=None, title=None, yaxis_title=None, inc_change_sum=Tr
     fig = go.Figure()
 
     if shaded_range is not None:
-        r, rangeyr = cpu.min_max_range(seas, shaded_range)
-        fig.add_trace(go.Scatter(x=r.index, y=r['max'].values, fill=None, name='%syr Max' % rangeyr, mode='lines',
-                                 line_color='lightsteelblue', line_width=0.1))
-        fig.add_trace(go.Scatter(x=r.index, y=r['min'].values, fill='tonexty', name='%syr Min' % rangeyr, mode='lines',
-                                 line_color='lightsteelblue', line_width=0.1))
+        maxtrace, mintrace = shaded_range_traces(seas, shaded_range)
+        fig.add_trace(maxtrace)
+        fig.add_trace(mintrace)
 
     for col in seas.columns:
         fig.add_trace(
@@ -61,7 +68,6 @@ def seas_line_plot(df, fwd=None, title=None, yaxis_title=None, inc_change_sum=Tr
                 go.Scatter(x=fwd.index, y=fwd[col], hoverinfo='y', name=col, hovertemplate=hist_hover_temp, text=text,
                            line=dict(color=cpu.get_year_line_col(col), dash='dot')))
 
-    # xaxis=go.layout.XAxis(title_font={"size": 10}), if making date label smaller
     legend = go.layout.Legend(font=dict(size=10))
     fig.layout.xaxis.tickvals = pd.date_range(seas.index[0], seas.index[-1], freq='MS')
     fig.update_layout(title=title,  xaxis_tickformat='%b', yaxis_title=yaxis_title, legend=legend)
@@ -100,30 +106,8 @@ def seas_box_plot(hist, fwd=None, title=''):
     return fig
 
 
-def seas_table(hist, fwd):
-    hist = hist.resample('MS').mean()
-
-    if fwd.index[0] == hist.index[-1]:
-        hist = hist[:-1]
-
-    df = pd.concat([hist, fwd], sort=False)
-    df = transforms.seasonailse(df)
-
-    summary = df.resample('Q').mean()
-    winter = summary.iloc[[0, 3], :].mean()
-    winter.name = 'Q1+Q4'
-    summer = summary.iloc[[1, 2], :].mean()
-    summer.name = 'Q2+Q3'
-    summary.index = ['Q1', 'Q2', 'Q3', 'Q4']
-    summary = summary.append(winter)
-    summary = summary.append(summer)
-    cal = df.resample('Y').mean().iloc[0]
-    cal.name = 'Year'
-    summary = summary.append(cal)
-    summary = summary.round(2)
-
-    df.index = df.index.strftime('%b')
-    df = pd.concat([df, summary], sort=False).round(2)
+def seas_table_plot(hist, fwd):
+    df = cpu.seas_table(hist, fwd)
 
     colsh = list(df.columns)
     colsh.insert(0, 'Period')
@@ -146,9 +130,12 @@ def forward_history_plot(df, title=None, asFigure=False):
     """
      Given a dataframe of a curve's pricing history, plot a line chart showing how it has evolved over time
     """
+    df = df.rename(columns={x: pd.to_datetime(x) for x in df.columns})
+    df = df[sorted(list(df.columns), reverse=True)] # have latest column first
     df = df.rename(columns={x:cpu.format_date_col(x, '%d-%b') for x in df.columns}) # make nice labels for legend eg 05-Dec
-    # df = df[df.columns[::-1]] # reverse sort columns so newest curve is first (and hence darkest line)
+
     fig = df.iplot(title=title, colorscale='-Blues', asFigure=asFigure)
+    fig['data'][0]['line']['width'] = 2.2 # make latest line thicker
     return fig
 
 
@@ -171,7 +158,7 @@ def bar_line_plot(df, linecol='Total', title=None, yaxis_title=None, yaxis_range
     return fig
 
 
-def reindex_year_line_plot(df, title=None, yaxis_title=None, inc_change_sum=True, asFigure=False):
+def reindex_year_line_plot(df, title='', yaxis_title=None, inc_change_sum=True, shaded_range=None):
     """
     Given a dataframe of timeseries, reindex years and produce line plot
     :param df:
@@ -180,11 +167,31 @@ def reindex_year_line_plot(df, title=None, yaxis_title=None, inc_change_sum=True
 
     dft = transforms.reindex_year(df)
     dft = dft.tail(365 * 2) # normally 2 years is relevant for these type of charts
+    colsel = cpu.reindex_year_df_rel_col(dft)
     if inc_change_sum:
-        colsel = cpu.reindex_year_df_rel_col(dft)
-        title = '{}    {}: {}'.format(title, str(colsel).replace(title, ''), cpu.delta_summary_str(dft[colsel]))
+        delta_summ = cpu.delta_summary_str(dft[colsel])
+        title = '{}    {}: {}'.format(title, str(colsel).replace(title, ''), delta_summ)
 
-    fig = dft.iplot(color=cpu.std_yr_col(dft), title=title, yTitle=yaxis_title, asFigure=asFigure)
+    text = dft.index.strftime('%d-%b')
+    fig = go.Figure()
+
+    if shaded_range is not None:
+        maxtrace, mintrace = shaded_range_traces(dft, shaded_range)
+        fig.add_trace(maxtrace)
+        fig.add_trace(mintrace)
+
+    for col in dft.columns:
+        width = 2.2 if col == colsel else 1.5
+        colyear = cpu.dates.find_year(dft)[col]
+        visibile = cpu.line_visible(colyear)
+        color = cpu.get_year_line_col(colyear)
+        fig.add_trace(
+            go.Scatter(x=dft.index, y=dft[col], hoverinfo='y', name=col, hovertemplate=hist_hover_temp, text=text,
+                       visible=visibile, line=dict(color=color, width=width)))
+
+    legend = go.layout.Legend(font=dict(size=10))
+    fig.update_layout(title=title, xaxis_tickformat='%b-%y', yaxis_title=yaxis_title, legend=legend)
+
     return fig
 
 
