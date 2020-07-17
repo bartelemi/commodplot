@@ -181,7 +181,7 @@ def reindex_year_line_plot(df, title='', yaxis_title=None, inc_change_sum=True, 
         fig.add_trace(mintrace)
 
     for col in dft.columns:
-        width = 2.2 if col == colsel else 1.5
+        width = 2.2 if col == colsel else 1.2
         colyear = cpu.dates.find_year(dft)[col]
         visibile = cpu.line_visible(colyear)
         color = cpu.get_year_line_col(colyear)
