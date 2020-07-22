@@ -152,7 +152,10 @@ def min_max_range(seas, shaded_range):
     res['max'] = res.max(1)
     res = res[['min', 'max']]
 
-    rangeyr = int(len(r.columns)) # end_year - start_year
+    if len(r.columns) >= 2:
+        rangeyr = int(len(r.columns)) # end_year - start_year
+    else:
+        rangeyr = None
     return res, rangeyr
 
 
