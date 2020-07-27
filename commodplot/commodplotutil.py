@@ -132,17 +132,18 @@ def min_max_range(seas, shaded_range):
     :param shaded_range:
     :return:
     """
-
+    seas = seas.dropna(how='all', axis=1)
     seasf = seas.rename(columns=dates.find_year(seas))
 
     # only consider when we have full(er) data for a given range
     fulldata = pd.DataFrame(seasf.isna().sum()) # count non-na values
-    fulldata = fulldata[fulldata.apply(lambda x: np.abs(x - x.mean()) / x.std() < 1.5).all(axis=1)] # filter columns with high emtply values
+    if not (fulldata == 0).all().iloc[0]: # line below doesn't apple when we have full data for all columns
+        fulldata = fulldata[fulldata.apply(lambda x: np.abs(x - x.mean()) / x.std() < 1.5).all(axis=1)] # filter columns with high emtply values
     seasf = seasf[fulldata.index] # use these column names only
 
     if isinstance(shaded_range, int):
         end_year = dates.curyear - 1
-        start_year = end_year - shaded_range
+        start_year = end_year - (shaded_range - 1)
     else:
         start_year, end_year = shaded_range[0], shaded_range[1]
 
