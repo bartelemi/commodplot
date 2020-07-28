@@ -213,21 +213,3 @@ def reindex_year_line_plot(df, **kwargs):
 
     return fig
 
-
-# TODO remove once transitioned over legacy code
-# Moved to commodplotutil
-def plhtml(fig, margin=cpu.narrow_margin, **kwargs):
-    """
-    Given a plotly figure, return it as a div
-    """
-    # if 'margin' in kwargs:
-    if fig is not None:
-        fig.update_layout(margin=margin)
-
-        fig.update_xaxes(automargin=True)
-        fig.update_yaxes(automargin=True)
-        return pl.plot(fig, include_plotlyjs=False, output_type='div')
-
-    return ''
-
-
