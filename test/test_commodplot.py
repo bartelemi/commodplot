@@ -13,7 +13,7 @@ class TestCommodplot(unittest.TestCase):
         cl = pd.read_csv(os.path.join(dirname, 'test_cl.csv'), index_col=0, parse_dates=True, dayfirst=True)
         cl = cl.dropna(how='all', axis=1)
 
-        res = commodplot.seas_line_plot(cl[cl.columns[-1]])
+        res = commodplot.seas_line_plot(cl[cl.columns[-1]], shaded_range=5)
         self.assertTrue(isinstance(res, go.Figure))
 
     def test_reindex_year_line_plot(self):

@@ -10,16 +10,27 @@ cf.go_offline()
 hist_hover_temp = '<i>%{text}</i>: %{y:.2f}'
 
 
-def shaded_range_traces(seas, shaded_range):
+def add_shaded_range_traces(fig, seas, shaded_range):
     r, rangeyr = cpu.min_max_range(seas, shaded_range)
-    max_trace = go.Scatter(x=r.index, y=r['max'].values, fill=None, name='%syr Max' % rangeyr, mode='lines',
-                             line_color='lightsteelblue', line_width=0.1)
-    min_trace = go.Scatter(x=r.index, y=r['min'].values, fill='tonexty', name='%syr Min' % rangeyr, mode='lines',
-                             line_color='lightsteelblue', line_width=0.1)
-    return max_trace, min_trace
+    if rangeyr is not None:
+        max_trace = go.Scatter(x=r.index, y=r['max'].values, fill=None, name='%syr Max' % rangeyr, mode='lines',
+                                 line_color='lightsteelblue', line_width=0.1)
+        fig.add_trace(max_trace)
+        min_trace = go.Scatter(x=r.index, y=r['min'].values, fill='tonexty', name='%syr Min' % rangeyr, mode='lines',
+                                 line_color='lightsteelblue', line_width=0.1)
+        fig.add_trace(min_trace)
 
 
-def seas_line_plot(df, fwd=None, title=None, yaxis_title=None, inc_change_sum=True, histfreq=None, shaded_range=None):
+def gen_title(df, **kwargs):
+    title = kwargs.get('title', '')
+    inc_change_sum = kwargs.get('inc_change_sum', True)
+    if inc_change_sum:
+        title = '{}   {}'.format(title, cpu.delta_summary_str(df))
+
+    return title
+
+
+def seas_line_plot(df, fwd=None, **kwargs):
     """
      Given a DataFrame produce a seasonal line plot (x-axis - Jan-Dec, y-axis Yearly lines)
      Can overlay a forward curve on top of this
@@ -27,11 +38,16 @@ def seas_line_plot(df, fwd=None, title=None, yaxis_title=None, inc_change_sum=Tr
     if isinstance(df, pd.Series):
         df = pd.DataFrame(df)
 
+    histfreq = kwargs.get('histfreq', None)
     if histfreq is None:
         histfreq = pd.infer_freq(df.index)
         if histfreq is None:
             histfreq = 'D' # sometimes infer_freq returns null - assume mostly will be a daily series
-    seas = transforms.seasonailse(df)
+
+    if histfreq.startswith('W'):
+        seas = transforms.seasonalise_weekly(df, freq=histfreq  )
+    else:
+        seas = transforms.seasonailse(df)
 
     text = seas.index.strftime('%b')
     if histfreq in ['B', 'D']:
@@ -41,20 +57,16 @@ def seas_line_plot(df, fwd=None, title=None, yaxis_title=None, inc_change_sum=Tr
 
     fig = go.Figure()
 
+    shaded_range = kwargs.get('shaded_range', None)
     if shaded_range is not None:
-        maxtrace, mintrace = shaded_range_traces(seas, shaded_range)
-        fig.add_trace(maxtrace)
-        fig.add_trace(mintrace)
+        add_shaded_range_traces(fig, seas, shaded_range)
 
     for col in seas.columns:
         fig.add_trace(
             go.Scatter(x=seas.index, y=seas[col], hoverinfo='y', name=col, hovertemplate=hist_hover_temp, text=text,
                        visible=cpu.line_visible(col), line=dict(color=cpu.get_year_line_col(col), width=cpu.get_year_line_width(col))))
 
-    if title is None:
-        title = ''
-    if inc_change_sum:
-        title = '{}   {}'.format(title, cpu.delta_summary_str(df))
+    title = gen_title(df, **kwargs)
 
     if fwd is not None:
         fwdfreq = pd.infer_freq(fwd.index)
@@ -69,13 +81,14 @@ def seas_line_plot(df, fwd=None, title=None, yaxis_title=None, inc_change_sum=Tr
                            line=dict(color=cpu.get_year_line_col(col), dash='dot')))
 
     legend = go.layout.Legend(font=dict(size=10))
+    yaxis_title = kwargs.get('yaxis_title', None)
     fig.layout.xaxis.tickvals = pd.date_range(seas.index[0], seas.index[-1], freq='MS')
     fig.update_layout(title=title,  xaxis_tickformat='%b', yaxis_title=yaxis_title, legend=legend)
 
     return fig
 
 
-def seas_box_plot(hist, fwd=None, title=''):
+def seas_box_plot(hist, fwd=None, **kwargs):
     hist = transforms.monthly_mean(hist)
     hist = hist.T
 
@@ -101,6 +114,7 @@ def seas_box_plot(hist, fwd=None, title=''):
         data.append(trace)
 
     fig = go.Figure(data=data)
+    title = kwargs.get('title', '')
     fig.update_layout(title=title)
 
     return fig
@@ -139,7 +153,7 @@ def forward_history_plot(df, title=None, asFigure=False):
     return fig
 
 
-def bar_line_plot(df, linecol='Total', title=None, yaxis_title=None, yaxis_range=None):
+def bar_line_plot(df, linecol='Total', **kwargs):
     """
     Give a dataframe, make a stacked bar chart along with overlaying line chart.
     """
@@ -152,13 +166,16 @@ def bar_line_plot(df, linecol='Total', title=None, yaxis_title=None, yaxis_range
 
     fig = cf.tools.figures(df, [barspecs, linespecs]) # returns dict
     fig = go.Figure(fig)
+    yaxis_title = kwargs.get('yaxis_title', None)
+    yaxis_range = kwargs.get('yaxis_range', None)
+    title = kwargs.get('title', None)
     fig.update_layout(title=title, xaxis_title='Date', yaxis_title=yaxis_title)
     if yaxis_range is not None:
         fig.update_layout(yaxis=dict(range=yaxis_range))
     return fig
 
 
-def reindex_year_line_plot(df, title='', yaxis_title=None, inc_change_sum=True, shaded_range=None):
+def reindex_year_line_plot(df, **kwargs):
     """
     Given a dataframe of timeseries, reindex years and produce line plot
     :param df:
@@ -168,6 +185,8 @@ def reindex_year_line_plot(df, title='', yaxis_title=None, inc_change_sum=True, 
     dft = transforms.reindex_year(df)
     dft = dft.tail(365 * 2) # normally 2 years is relevant for these type of charts
     colsel = cpu.reindex_year_df_rel_col(dft)
+    inc_change_sum = kwargs.get('inc_change_sum', True)
+    title = kwargs.get('title', '')
     if inc_change_sum:
         delta_summ = cpu.delta_summary_str(dft[colsel])
         title = '{}    {}: {}'.format(title, str(colsel).replace(title, ''), delta_summ)
@@ -175,10 +194,9 @@ def reindex_year_line_plot(df, title='', yaxis_title=None, inc_change_sum=True, 
     text = dft.index.strftime('%d-%b')
     fig = go.Figure()
 
+    shaded_range = kwargs.get('shaded_range', None)
     if shaded_range is not None:
-        maxtrace, mintrace = shaded_range_traces(dft, shaded_range)
-        fig.add_trace(maxtrace)
-        fig.add_trace(mintrace)
+        add_shaded_range_traces(fig, dft, shaded_range)
 
     for col in dft.columns:
         width = 2.2 if col == colsel else 1.2
@@ -190,25 +208,8 @@ def reindex_year_line_plot(df, title='', yaxis_title=None, inc_change_sum=True, 
                        visible=visibile, line=dict(color=color, width=width)))
 
     legend = go.layout.Legend(font=dict(size=10))
+    yaxis_title = kwargs.get('yaxis_title', None)
     fig.update_layout(title=title, xaxis_tickformat='%b-%y', yaxis_title=yaxis_title, legend=legend)
 
     return fig
-
-
-# TODO remove once transitioned over legacy code
-# Moved to commodplotutil
-def plhtml(fig, margin=cpu.narrow_margin, **kwargs):
-    """
-    Given a plotly figure, return it as a div
-    """
-    # if 'margin' in kwargs:
-    if fig is not None:
-        fig.update_layout(margin=margin)
-
-        fig.update_xaxes(automargin=True)
-        fig.update_yaxes(automargin=True)
-        return pl.plot(fig, include_plotlyjs=False, output_type='div')
-
-    return ''
-
 

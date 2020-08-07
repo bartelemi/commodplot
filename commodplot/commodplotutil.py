@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 import plotly.graph_objects as go
 import plotly.offline as pl
 from commodutil import transforms
@@ -133,21 +134,32 @@ def min_max_range(seas, shaded_range):
     :param shaded_range:
     :return:
     """
-
+    seas = seas.dropna(how='all', axis=1)
     seasf = seas.rename(columns=dates.find_year(seas))
+
+    # only consider when we have full(er) data for a given range
+    fulldata = pd.DataFrame(seasf.isna().sum()) # count non-na values
+    if not (fulldata == 0).all().iloc[0]: # line below doesn't apple when we have full data for all columns
+        fulldata = fulldata[fulldata.apply(lambda x: np.abs(x - x.mean()) / x.std() < 1.5).all(axis=1)] # filter columns with high emtply values
+    seasf = seasf[fulldata.index] # use these column names only
+
     if isinstance(shaded_range, int):
-        end_year = seasf.columns[-2]
-        start_year = end_year - shaded_range
+        end_year = dates.curyear - 1
+        start_year = end_year - (shaded_range - 1)
     else:
         start_year, end_year = shaded_range[0], shaded_range[1]
 
     r = seasf[[x for x in seasf.columns if x >= start_year and x <= end_year]]
-    r['min'] = r.min(1)
-    r['max'] = r.max(1)
-    r = r[['min', 'max']]
+    res = r.copy()
+    res['min'] = res.min(1)
+    res['max'] = res.max(1)
+    res = res[['min', 'max']]
 
-    rangeyr = end_year - start_year
-    return r, rangeyr
+    if len(r.columns) >= 2:
+        rangeyr = int(len(r.columns)) # end_year - start_year
+    else:
+        rangeyr = None
+    return res, rangeyr
 
 
 def format_date_col(col, date_format='%d-%b'):
