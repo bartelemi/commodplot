@@ -106,7 +106,7 @@ def seas_box_plot(hist, fwd=None, title=''):
     return fig
 
 
-def seas_table_plot(hist, fwd):
+def seas_table_plot(hist, fwd=None):
     df = cpu.seas_table(hist, fwd)
 
     colsh = list(df.columns)

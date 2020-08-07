@@ -57,13 +57,15 @@ def line_visible(year):
     return None if delta >= -5 else "legendonly"
 
 
-def seas_table(hist, fwd):
+def seas_table(hist, fwd=None):
     hist = hist.resample('MS').mean()
 
-    if fwd.index[0] == hist.index[-1]:
+    if fwd is not None and fwd.index[0] == hist.index[-1]:
         hist = hist[:-1]
+        df = pd.concat([hist, fwd], sort=False)
+    else:
+        df = hist
 
-    df = pd.concat([hist, fwd], sort=False)
     df = transforms.seasonailse(df)
 
     summary = df.resample('Q').mean()
