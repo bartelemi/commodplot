@@ -2,10 +2,10 @@ import setuptools
 
 setuptools.setup(
     name="commodplot",
-    version="1.0.17",
+    version="1.0.18",
     author="aeorxc",
     author_email="author@example.com",
-    description="common commodity plotting including seasonal charts",
+    description="common commodity plotting including seasonal charts using plotly",
     url="https://github.com/aeorxc/commodplot",
     project_urls={
         'Source': 'https://github.com/aeorxc/commodplot',

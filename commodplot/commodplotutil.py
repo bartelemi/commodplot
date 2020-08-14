@@ -1,7 +1,8 @@
 import pandas as pd
 import numpy as np
 import plotly.graph_objects as go
-import plotly.offline as pl
+import plotly as pl
+import base64
 from commodutil import transforms
 from commodutil import dates
 default_line_col = 'khaki'
@@ -224,7 +225,7 @@ def plhtml(fig, margin=narrow_margin, **kwargs):
 
         fig.update_xaxes(automargin=True)
         fig.update_yaxes(automargin=True)
-        return pl.plot(fig, include_plotlyjs=False, output_type='div')
+        return pl.offline.plot(fig, include_plotlyjs=False, output_type='div')
 
     return ''
 
@@ -238,5 +239,28 @@ def convert_dict_plotly_fig_html_div(d):
             d[k] = plhtml(d[k])
         if isinstance(d[k], dict):
             convert_dict_plotly_fig_html_div(d[k])
+
+    return d
+
+
+def plpng(fig):
+    """
+    Given a plotly figure, return it as a png
+    """
+    image = base64.b64encode(pl.io.to_image(fig)).decode("ascii")
+    res = '<img src="data:image/png;base64,{image}">'.format(image=image)
+
+    return res
+
+
+def convert_dict_plotly_fig_png(d):
+    """
+    Given a dict (that might be passed to jinja), convert all plotly figures png
+    """
+    for k, v in d.items():
+        if isinstance(d[k], go.Figure):
+            d[k] = plpng(d[k])
+        if isinstance(d[k], dict):
+            convert_dict_plotly_fig_png(d[k])
 
     return d
