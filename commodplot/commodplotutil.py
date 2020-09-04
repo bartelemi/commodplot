@@ -264,3 +264,18 @@ def convert_dict_plotly_fig_png(d):
             convert_dict_plotly_fig_png(d[k])
 
     return d
+
+
+def jinja_finalize(value):
+    """
+    Finalize for jinja which makes empty entries show as blank rather than none
+    and converts plotly charts to html divs
+    :param value:
+    :return:
+    """
+    if value is None:
+        return ''
+    if isinstance(value, go.Figure):
+        return plhtml(value)
+
+    return value
