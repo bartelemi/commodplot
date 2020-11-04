@@ -1,11 +1,8 @@
 import pandas as pd
-import plotly.offline as pl
+import plotly as py
 import plotly.graph_objects as go
 from commodplot import commodplotutil as cpu
 from commodutil import transforms
-import cufflinks as cf
-
-cf.go_offline()
 
 hist_hover_temp = '<i>%{text}</i>: %{y:.2f}'
 
@@ -140,16 +137,28 @@ def seas_table_plot(hist, fwd=None):
     return figm
 
 
-def forward_history_plot(df, title=None, asFigure=False):
+def forward_history_plot(df, title=None, **kwargs):
     """
      Given a dataframe of a curve's pricing history, plot a line chart showing how it has evolved over time
     """
     df = df.rename(columns={x: pd.to_datetime(x) for x in df.columns})
     df = df[sorted(list(df.columns), reverse=True)] # have latest column first
-    df = df.rename(columns={x:cpu.format_date_col(x, '%d-%b') for x in df.columns}) # make nice labels for legend eg 05-Dec
+    df = df.rename(columns={x: cpu.format_date_col(x, '%d-%b') for x in df.columns}) # make nice labels for legend eg 05-Dec
 
-    fig = df.iplot(title=title, colorscale='-Blues', asFigure=asFigure)
+    colseq = py.colors.sequential.Aggrnyl
+
+    fig = go.Figure()
+    colcount = 0
+    for col in df.columns:
+        color = colseq[colcount] if colcount < len(colseq) else colseq[-1]
+        fig.add_trace(
+            go.Scatter(x=df.index, y=df[col], hoverinfo='y', name=str(col), line=dict(color=color)))
+        colcount = colcount + 1
+
     fig['data'][0]['line']['width'] = 2.2 # make latest line thicker
+    legend = go.layout.Legend(font=dict(size=10))
+    yaxis_title = kwargs.get('yaxis_title', None)
+    fig.update_layout(title=title, xaxis_tickformat='%b-%y', yaxis_title=yaxis_title, legend=legend)
     return fig
 
 

@@ -1,4 +1,3 @@
 pandas
-cufflinks
 plotly
 commodutil
