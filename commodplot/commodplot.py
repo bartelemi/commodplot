@@ -208,7 +208,7 @@ def reindex_year_line_plot(df, **kwargs):
         add_shaded_range_traces(fig, dft, shaded_range)
 
     for col in dft.columns:
-        width = 2.2 if col == colsel else 1.2
+        width = 2.2 if col >= colsel else 1.2
         colyear = cpu.dates.find_year(dft)[col]
         visibile = cpu.line_visible(colyear)
         color = cpu.get_year_line_col(colyear)
