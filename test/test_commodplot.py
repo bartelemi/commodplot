@@ -36,6 +36,14 @@ class TestCommodplot(unittest.TestCase):
         res = commodplot.seas_box_plot(cl[cl.columns[-1]], fwd)
         self.assertTrue(isinstance(res, go.Figure))
 
+    def test_table_plot(self):
+        dirname, filename = os.path.split(os.path.abspath(__file__))
+        cl = pd.read_csv(os.path.join(dirname, 'test_cl.csv'), index_col=0, parse_dates=True, dayfirst=True)
+        cl = cl.dropna(how='all', axis=1)
+
+        res = commodplot.table_plot(cl, formatted_cols=['CL_2020F'])
+        self.assertTrue(isinstance(res, go.Figure))
+
     def test_seas_table(self):
         dirname, filename = os.path.split(os.path.abspath(__file__))
         cl = pd.read_csv(os.path.join(dirname, 'test_cl.csv'), index_col=0, parse_dates=True, dayfirst=True)

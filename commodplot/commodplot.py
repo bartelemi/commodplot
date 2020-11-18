@@ -137,6 +137,37 @@ def seas_table_plot(hist, fwd=None):
     return figm
 
 
+def table_plot(df, **kwargs):
+    row_even_colour = kwargs.get('row_even_colour', 'lightgrey')
+    row_odd_color = kwargs.get('row_odd_colour', 'white')
+
+    # include index col as part of plot
+    indexname = '' if df.index.name is None else df.index.name
+    colheaders = [indexname] + list(df.columns)
+    headerfill = ['white' if x == '' else 'grey' for x in colheaders]
+
+
+    cols = [df[x] for x in df.columns]
+    # apply red/green to formatted_cols
+    fcols = kwargs.get('formatted_cols', [])
+    font_color = [['red' if str(y).startswith('-') else 'green' for y in df[x]] if x in fcols else 'black' for x in colheaders]
+
+    if isinstance(df.index, pd.DatetimeIndex): # if index is datetime, format dates
+        df.index = df.index.map(lambda x: x.strftime('%d-%m-%Y'), 1)
+    cols.insert(0, df.index)
+
+    fig = go.Figure(data=[go.Table(
+        header=dict(values=colheaders, fill_color=headerfill, align='center', font=dict(color='white', size=12)),
+        cells=dict(values=cols,
+                   line= dict(color='#506784'),
+                   fill_color= [[row_odd_color,row_even_colour]*len(df)],
+                   align='right',
+                   font_color=font_color,
+            ))
+    ])
+    return fig
+
+
 def forward_history_plot(df, title=None, **kwargs):
     """
      Given a dataframe of a curve's pricing history, plot a line chart showing how it has evolved over time
