@@ -1,5 +1,6 @@
 import pandas as pd
 import plotly as py
+import cufflinks as cf
 import plotly.graph_objects as go
 from commodplot import commodplotutil as cpu
 from commodutil import transforms
@@ -177,13 +178,16 @@ def forward_history_plot(df, title=None, **kwargs):
     df = df.rename(columns={x: cpu.format_date_col(x, '%d-%b') for x in df.columns}) # make nice labels for legend eg 05-Dec
 
     colseq = py.colors.sequential.Aggrnyl
+    text = df.index.strftime('%b-%y')
 
     fig = go.Figure()
     colcount = 0
     for col in df.columns:
         color = colseq[colcount] if colcount < len(colseq) else colseq[-1]
         fig.add_trace(
-            go.Scatter(x=df.index, y=df[col], hoverinfo='y', name=str(col), line=dict(color=color)))
+            go.Scatter(x=df.index, y=df[col], hoverinfo='y', name=str(col), line=dict(color=color),
+                       hovertemplate=hist_hover_temp, text=text))
+
         colcount = colcount + 1
 
     fig['data'][0]['line']['width'] = 2.2 # make latest line thicker
@@ -223,7 +227,6 @@ def reindex_year_line_plot(df, **kwargs):
     """
 
     dft = transforms.reindex_year(df)
-    dft = dft.tail(365 * 2) # normally 2 years is relevant for these type of charts
     colsel = cpu.reindex_year_df_rel_col(dft)
     inc_change_sum = kwargs.get('inc_change_sum', True)
     title = kwargs.get('title', '')
@@ -250,6 +253,8 @@ def reindex_year_line_plot(df, **kwargs):
     legend = go.layout.Legend(font=dict(size=10))
     yaxis_title = kwargs.get('yaxis_title', None)
     fig.update_layout(title=title, xaxis_tickformat='%b-%y', yaxis_title=yaxis_title, legend=legend)
+    # zoom into last 3 years
+    fig.update_xaxes(type="date", range=[dft.tail(365 * 3).index[0].strftime('%Y-%m-%d'), dft.index[-1].strftime('%Y-%m-%d')])
 
     return fig
 
