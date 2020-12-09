@@ -2,7 +2,7 @@ import setuptools
 
 setuptools.setup(
     name="commodplot",
-    version="1.0.25",
+    version="1.0.26",
     author="aeorxc",
     author_email="author@example.com",
     description="common commodity plotting including seasonal charts using plotly",

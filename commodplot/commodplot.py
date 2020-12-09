@@ -8,17 +8,6 @@ from commodutil import transforms
 hist_hover_temp = '<i>%{text}</i>: %{y:.2f}'
 
 
-def add_shaded_range_traces(fig, seas, shaded_range):
-    r, rangeyr = cpu.min_max_range(seas, shaded_range)
-    if rangeyr is not None:
-        max_trace = go.Scatter(x=r.index, y=r['max'].values, fill=None, name='%syr Max' % rangeyr, mode='lines',
-                                 line_color='lightsteelblue', line_width=0.1)
-        fig.add_trace(max_trace)
-        min_trace = go.Scatter(x=r.index, y=r['min'].values, fill='tonexty', name='%syr Min' % rangeyr, mode='lines',
-                                 line_color='lightsteelblue', line_width=0.1)
-        fig.add_trace(min_trace)
-
-
 def gen_title(df, **kwargs):
     title = kwargs.get('title', '')
     inc_change_sum = kwargs.get('inc_change_sum', True)
@@ -26,6 +15,39 @@ def gen_title(df, **kwargs):
         title = '{}   {}'.format(title, cpu.delta_summary_str(df))
 
     return title
+
+
+def shaded_range_traces(seas, shaded_range):
+    r, rangeyr = cpu.min_max_range(seas, shaded_range)
+    if rangeyr is not None:
+        traces = []
+        max_trace = go.Scatter(x=r.index, y=r['max'].values, fill=None, name='%syr Max' % rangeyr, mode='lines',
+                                 line_color='lightsteelblue', line_width=0.1)
+        traces.append(max_trace)
+        min_trace = go.Scatter(x=r.index, y=r['min'].values, fill='tonexty', name='%syr Min' % rangeyr, mode='lines',
+                                 line_color='lightsteelblue', line_width=0.1)
+        traces.append(min_trace)
+    return traces
+
+
+def timeseries_to_seas_trace(seas, text, dash=None, showlegend=True):
+    traces = []
+    for col in seas.columns:
+        trace = go.Scatter(x=seas.index,
+                           y=seas[col],
+                           hoverinfo='y',
+                           name=col,
+                           hovertemplate=hist_hover_temp,
+                           text=text,
+                           visible=cpu.line_visible(col),
+                           line=dict(color=cpu.get_year_line_col(col),
+                                     dash=dash,
+                                     width=cpu.get_year_line_width(col)),
+                           showlegend=showlegend,
+                           legendgroup=col)
+        traces.append(trace)
+
+    return traces
 
 
 def seas_line_plot(df, fwd=None, **kwargs):
@@ -47,6 +69,8 @@ def seas_line_plot(df, fwd=None, **kwargs):
     else:
         seas = transforms.seasonailse(df)
 
+    seas = seas.dropna(how='all', axis=1)
+
     text = seas.index.strftime('%b')
     if histfreq in ['B', 'D']:
         text = seas.index.strftime('%d-%b')
@@ -57,30 +81,30 @@ def seas_line_plot(df, fwd=None, **kwargs):
 
     shaded_range = kwargs.get('shaded_range', None)
     if shaded_range is not None:
-        add_shaded_range_traces(fig, seas, shaded_range)
+        traces = shaded_range_traces(seas, shaded_range)
+        for trace in traces:
+            fig.add_trace(trace)
 
-    for col in seas.columns:
-        fig.add_trace(
-            go.Scatter(x=seas.index, y=seas[col], hoverinfo='y', name=col, hovertemplate=hist_hover_temp, text=text,
-                       visible=cpu.line_visible(col), line=dict(color=cpu.get_year_line_col(col), width=cpu.get_year_line_width(col))))
-
-    title = gen_title(df, **kwargs)
+    traces = timeseries_to_seas_trace(seas, text)
+    for trace in traces:
+        fig.add_trace(trace)
 
     if fwd is not None:
         fwdfreq = pd.infer_freq(fwd.index)
         # for charts which are daily, resample the forward curve into a daily series
         if histfreq in ['B', 'D'] and fwdfreq in ['MS', 'ME']:
             fwd = transforms.format_fwd(fwd, df.iloc[-1].name) # only applies for forward curves
-        fwd = transforms.seasonailse(fwd)
+        fwdseas = transforms.seasonailse(fwd)
 
-        for col in fwd.columns:
-            fig.add_trace(
-                go.Scatter(x=fwd.index, y=fwd[col], hoverinfo='y', name=col, hovertemplate=hist_hover_temp, text=text,
-                           line=dict(color=cpu.get_year_line_col(col), dash='dot')))
+        traces = timeseries_to_seas_trace(fwdseas, text, dash='dot')
+        for trace in traces:
+            fig.add_trace(trace)
 
+    fig.layout.xaxis.tickvals = pd.date_range(seas.index[0], seas.index[-1], freq='MS')
+
+    title = gen_title(df, **kwargs)
     legend = go.layout.Legend(font=dict(size=10))
     yaxis_title = kwargs.get('yaxis_title', None)
-    fig.layout.xaxis.tickvals = pd.date_range(seas.index[0], seas.index[-1], freq='MS')
     fig.update_layout(title=title,  xaxis_tickformat='%b', yaxis_title=yaxis_title, legend=legend)
 
     return fig
@@ -239,7 +263,9 @@ def reindex_year_line_plot(df, **kwargs):
 
     shaded_range = kwargs.get('shaded_range', None)
     if shaded_range is not None:
-        add_shaded_range_traces(fig, dft, shaded_range)
+        traces = shaded_range_traces(dft, shaded_range)
+        for trace in traces:
+            fig.add_trace(trace)
 
     for col in dft.columns:
         width = 2.2 if col >= colsel else 1.2

@@ -56,7 +56,7 @@ def get_year_line_width(year):
 
 def line_visible(year):
     delta = get_year_line_delta(year)
-    return None if delta >= -5 else "legendonly"
+    return None if -5 <= delta <= 3 else "legendonly"
 
 
 def seas_table(hist, fwd=None):
