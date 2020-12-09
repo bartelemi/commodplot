@@ -2,52 +2,11 @@ import pandas as pd
 import plotly as py
 import cufflinks as cf
 import plotly.graph_objects as go
+from plotly.subplots import make_subplots
 from commodplot import commodplotutil as cpu
+from commodplot import commodplottrace as cptr
 from commodutil import transforms
-
-hist_hover_temp = '<i>%{text}</i>: %{y:.2f}'
-
-
-def gen_title(df, **kwargs):
-    title = kwargs.get('title', '')
-    inc_change_sum = kwargs.get('inc_change_sum', True)
-    if inc_change_sum:
-        title = '{}   {}'.format(title, cpu.delta_summary_str(df))
-
-    return title
-
-
-def shaded_range_traces(seas, shaded_range):
-    r, rangeyr = cpu.min_max_range(seas, shaded_range)
-    if rangeyr is not None:
-        traces = []
-        max_trace = go.Scatter(x=r.index, y=r['max'].values, fill=None, name='%syr Max' % rangeyr, mode='lines',
-                                 line_color='lightsteelblue', line_width=0.1)
-        traces.append(max_trace)
-        min_trace = go.Scatter(x=r.index, y=r['min'].values, fill='tonexty', name='%syr Min' % rangeyr, mode='lines',
-                                 line_color='lightsteelblue', line_width=0.1)
-        traces.append(min_trace)
-    return traces
-
-
-def timeseries_to_seas_trace(seas, text, dash=None, showlegend=True):
-    traces = []
-    for col in seas.columns:
-        trace = go.Scatter(x=seas.index,
-                           y=seas[col],
-                           hoverinfo='y',
-                           name=col,
-                           hovertemplate=hist_hover_temp,
-                           text=text,
-                           visible=cpu.line_visible(col),
-                           line=dict(color=cpu.get_year_line_col(col),
-                                     dash=dash,
-                                     width=cpu.get_year_line_width(col)),
-                           showlegend=showlegend,
-                           legendgroup=col)
-        traces.append(trace)
-
-    return traces
+from commodutil import dates
 
 
 def seas_line_plot(df, fwd=None, **kwargs):
@@ -55,58 +14,79 @@ def seas_line_plot(df, fwd=None, **kwargs):
      Given a DataFrame produce a seasonal line plot (x-axis - Jan-Dec, y-axis Yearly lines)
      Can overlay a forward curve on top of this
     """
-    if isinstance(df, pd.Series):
-        df = pd.DataFrame(df)
-
-    histfreq = kwargs.get('histfreq', None)
-    if histfreq is None:
-        histfreq = pd.infer_freq(df.index)
-        if histfreq is None:
-            histfreq = 'D' # sometimes infer_freq returns null - assume mostly will be a daily series
-
-    if histfreq.startswith('W'):
-        seas = transforms.seasonalise_weekly(df, freq=histfreq  )
-    else:
-        seas = transforms.seasonailse(df)
-
-    seas = seas.dropna(how='all', axis=1)
-
-    text = seas.index.strftime('%b')
-    if histfreq in ['B', 'D']:
-        text = seas.index.strftime('%d-%b')
-    if histfreq.startswith('W'):
-        text = seas.index.strftime('%d-%b')
 
     fig = go.Figure()
-
-    shaded_range = kwargs.get('shaded_range', None)
-    if shaded_range is not None:
-        traces = shaded_range_traces(seas, shaded_range)
-        for trace in traces:
+    traces = cptr.seas_plot_traces(df, fwd, **kwargs)
+    if 'shaded_range' in traces:
+        for trace in traces['shaded_range']:
             fig.add_trace(trace)
 
-    traces = timeseries_to_seas_trace(seas, text)
-    for trace in traces:
-        fig.add_trace(trace)
-
-    if fwd is not None:
-        fwdfreq = pd.infer_freq(fwd.index)
-        # for charts which are daily, resample the forward curve into a daily series
-        if histfreq in ['B', 'D'] and fwdfreq in ['MS', 'ME']:
-            fwd = transforms.format_fwd(fwd, df.iloc[-1].name) # only applies for forward curves
-        fwdseas = transforms.seasonailse(fwd)
-
-        traces = timeseries_to_seas_trace(fwdseas, text, dash='dot')
-        for trace in traces:
+    if 'hist' in traces:
+        for trace in traces['hist']:
             fig.add_trace(trace)
 
-    fig.layout.xaxis.tickvals = pd.date_range(seas.index[0], seas.index[-1], freq='MS')
+    if 'fwd' in traces:
+        for trace in traces['fwd']:
+            fig.add_trace(trace)
 
-    title = gen_title(df, **kwargs)
+    fig.layout.xaxis.tickvals = pd.date_range(start=str(dates.curyear), periods=12, freq='MS')
+
+    title = cpu.gen_title(df, **kwargs)
     legend = go.layout.Legend(font=dict(size=10))
     yaxis_title = kwargs.get('yaxis_title', None)
     fig.update_layout(title=title,  xaxis_tickformat='%b', yaxis_title=yaxis_title, legend=legend)
 
+    return fig
+
+
+def seas_line_subplot(rows, cols, dfs, fwds=None, **kwargs):
+    """
+    Generate a plot with multiple seasonal subplots.
+    :param rows:
+    :param cols:
+    :param dfs:
+    :param fwds:
+    :param kwargs:
+    :return:
+    """
+    fig = make_subplots(
+        cols=cols,
+        rows=rows,
+        specs=[[{'type': 'scatter'} for x in range(0, cols)] for y in range(0, rows)],
+        subplot_titles=kwargs.get('subplot_titles', None)
+    )
+
+    chartcount = 0
+    for row in range(1, rows + 1):
+        for col in range(1, cols + 1):
+            #print(row, col)
+            if chartcount > len(dfs):
+                chartcount += 1
+                continue
+
+            df = dfs[chartcount]
+            if df is None:
+                chartcount += 1
+                continue
+            fwd = None
+            if fwds is not None and len(fwds) > chartcount:
+                fwd = fwds[chartcount]
+
+            showlegend = True if chartcount == 0 else False
+
+            traces = cptr.seas_plot_traces(df, fwd=fwd, showlegend=showlegend, **kwargs)
+
+            for trace_set in ['shaded_range', 'hist', 'fwd']:
+                if trace_set in traces:
+                    for trace in traces[trace_set]:
+                        fig.add_trace(trace, row=row, col=col)
+
+            chartcount += 1
+
+    legend = go.layout.Legend(font=dict(size=10))
+    fig.update_xaxes(tickvals=pd.date_range(start=str(dates.curyear), periods=12, freq='MS'), tickformat='%b')
+    title = kwargs.get('title', '')
+    fig.update_layout(title=title, xaxis_tickformat='%b', legend=legend)
     return fig
 
 
@@ -131,7 +111,7 @@ def seas_box_plot(hist, fwd=None, **kwargs):
             name=col,
             x=ser.index,
             y=ser,
-            line=dict(color=cpu.get_year_line_col(col), dash='dot')
+            line=dict(color=cptr.get_year_line_col(col), dash='dot')
         )
         data.append(trace)
 
@@ -210,7 +190,7 @@ def forward_history_plot(df, title=None, **kwargs):
         color = colseq[colcount] if colcount < len(colseq) else colseq[-1]
         fig.add_trace(
             go.Scatter(x=df.index, y=df[col], hoverinfo='y', name=str(col), line=dict(color=color),
-                       hovertemplate=hist_hover_temp, text=text))
+                       hovertemplate=cptr.hist_hover_temp, text=text))
 
         colcount = colcount + 1
 
@@ -263,17 +243,17 @@ def reindex_year_line_plot(df, **kwargs):
 
     shaded_range = kwargs.get('shaded_range', None)
     if shaded_range is not None:
-        traces = shaded_range_traces(dft, shaded_range)
+        traces = cptr.shaded_range_traces(dft, shaded_range)
         for trace in traces:
             fig.add_trace(trace)
 
     for col in dft.columns:
         width = 2.2 if col >= colsel else 1.2
         colyear = cpu.dates.find_year(dft)[col]
-        visibile = cpu.line_visible(colyear)
-        color = cpu.get_year_line_col(colyear)
+        visibile = cptr.line_visible(colyear)
+        color = cptr.get_year_line_col(colyear)
         fig.add_trace(
-            go.Scatter(x=dft.index, y=dft[col], hoverinfo='y', name=col, hovertemplate=hist_hover_temp, text=text,
+            go.Scatter(x=dft.index, y=dft[col], hoverinfo='y', name=col, hovertemplate=cptr.hist_hover_temp, text=text,
                        visible=visibile, line=dict(color=color, width=width)))
 
     legend = go.layout.Legend(font=dict(size=10))

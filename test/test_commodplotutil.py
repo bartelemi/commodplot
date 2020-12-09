@@ -1,9 +1,7 @@
 import unittest
 import plotly.express as px
-import pandas as pd
 import cufflinks as cf
 from commodplot import commodplotutil as cpu
-from commodutil import transforms
 
 
 class TestCommodPlotUtil(unittest.TestCase):
@@ -33,14 +31,6 @@ class TestCommodPlotUtil(unittest.TestCase):
         res = cpu.convert_dict_plotly_fig_html_div(data)
         self.assertTrue(isinstance(res['ch1'], str))
         self.assertTrue(isinstance(res['innerd']['ch2'], str))
-
-    def test_min_max_range(self):
-        df = cf.datagen.lines(1, 5000)
-        dft = transforms.seasonailse(df)
-        res = cpu.min_max_range(dft, shaded_range=5)
-        self.assertTrue(isinstance(res[0], pd.DataFrame))
-        self.assertTrue(isinstance(res[1], int))
-
 
 
 if __name__ == '__main__':

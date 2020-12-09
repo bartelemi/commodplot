@@ -28,6 +28,17 @@ class TestCommodplot(unittest.TestCase):
         dot_line = [x for x in res.data if x['name'] == '2021']
         self.assertEqual(dot_line[0].line.dash, 'dot')
 
+    def test_seas_line_subplot(self):
+        dirname, filename = os.path.split(os.path.abspath(__file__))
+        cl = pd.read_csv(os.path.join(dirname, 'test_cl.csv'), index_col=0, parse_dates=True, dayfirst=True)
+        cl = cl.dropna(how='all', axis=1)
+        fwd = pd.DataFrame([50 for x in range(12)], index=pd.date_range('2021-01-01', periods=12, freq='MS'))
+
+        dfs = [cl[cl.columns[-1]] for x in range (0, 4)]
+        fwds = [fwd for x in range (0, 4)]
+        res = commodplot.seas_line_subplot(2, 2, dfs, fwds=fwds, subplot_titles=['1', '2', '3', '4'], shaded_range=5)
+        self.assertTrue(isinstance(res, go.Figure))
+
     def test_reindex_year_line_plot(self):
         dirname, filename = os.path.split(os.path.abspath(__file__))
         cl = pd.read_csv(os.path.join(dirname, 'test_cl.csv'), index_col=0, parse_dates=True, dayfirst=True)
