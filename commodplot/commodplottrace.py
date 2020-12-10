@@ -198,7 +198,7 @@ def timeseries_to_seas_trace(seas, text, dash=None, showlegend=True):
     return traces
 
 
-def seas_plot_traces(df, fwd=None, showlegend=True, **kwargs):
+def seas_plot_traces(df, fwd=None, **kwargs):
     """
     Generate traces for a timeseries that is being turned into a seasonal plot.
     Gererate yearlines for both historical and forward (if provided) and the shaded range
@@ -216,6 +216,8 @@ def seas_plot_traces(df, fwd=None, showlegend=True, **kwargs):
     text = seas.index.strftime('%b')
     if histfreq in ['B', 'D', 'W']:
         text = seas.index.strftime('%d-%b')
+
+    showlegend = kwargs.get('showlegend', None)
 
     # shaded range
     shaded_range = kwargs.get('shaded_range', None)

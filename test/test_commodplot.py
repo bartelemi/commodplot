@@ -29,15 +29,16 @@ class TestCommodplot(unittest.TestCase):
         self.assertEqual(dot_line[0].line.dash, 'dot')
 
     def test_seas_line_subplot(self):
-        dirname, filename = os.path.split(os.path.abspath(__file__))
-        cl = pd.read_csv(os.path.join(dirname, 'test_cl.csv'), index_col=0, parse_dates=True, dayfirst=True)
-        cl = cl.dropna(how='all', axis=1)
-        fwd = pd.DataFrame([50 for x in range(12)], index=pd.date_range('2021-01-01', periods=12, freq='MS'))
+        dr = pd.date_range(start='2015', end='2020-12-31', freq='B')
+        data = {'A': [10 for x in dr], 'B': [20 for x in dr], 'C': [30 for x in dr], 'D': [10 for x in dr]}
+        df = pd.DataFrame(data, index=dr)
+        dr = pd.date_range('2021-01-01', periods=12, freq='MS')
+        data = {'A': [10 for x in dr], 'B': [20 for x in dr], 'C': [30 for x in dr], 'D': [10 for x in dr]}
+        fwd = pd.DataFrame(data, index=dr)
 
-        dfs = [cl[cl.columns[-1]] for x in range (0, 4)]
-        fwds = [fwd for x in range (0, 4)]
-        res = commodplot.seas_line_subplot(2, 2, dfs, fwds=fwds, subplot_titles=['1', '2', '3', '4'], shaded_range=5)
+        res = commodplot.seas_line_subplot(2, 2, df, fwd=fwd, subplot_titles=['1', '2', '3', '4'], shaded_range=5)
         self.assertTrue(isinstance(res, go.Figure))
+        self.assertEqual(4, [x.name for x in res.data].count('2020'))
 
     def test_reindex_year_line_plot(self):
         dirname, filename = os.path.split(os.path.abspath(__file__))

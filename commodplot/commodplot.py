@@ -39,7 +39,7 @@ def seas_line_plot(df, fwd=None, **kwargs):
     return fig
 
 
-def seas_line_subplot(rows, cols, dfs, fwds=None, **kwargs):
+def seas_line_subplot(rows, cols, df, fwd=None, **kwargs):
     """
     Generate a plot with multiple seasonal subplots.
     :param rows:
@@ -60,21 +60,18 @@ def seas_line_subplot(rows, cols, dfs, fwds=None, **kwargs):
     for row in range(1, rows + 1):
         for col in range(1, cols + 1):
             #print(row, col)
-            if chartcount > len(dfs):
+            if chartcount > len(df):
                 chartcount += 1
                 continue
 
-            df = dfs[chartcount]
-            if df is None:
-                chartcount += 1
-                continue
-            fwd = None
-            if fwds is not None and len(fwds) > chartcount:
-                fwd = fwds[chartcount]
+            dfx = df[df.columns[chartcount]]
+            fwdx = None
+            if fwd is not None and len(fwd) > chartcount:
+                fwdx = fwd[fwd.columns[chartcount]]
 
             showlegend = True if chartcount == 0 else False
 
-            traces = cptr.seas_plot_traces(df, fwd=fwd, showlegend=showlegend, **kwargs)
+            traces = cptr.seas_plot_traces(dfx, fwd=fwdx, showlegend=showlegend, **kwargs)
 
             for trace_set in ['shaded_range', 'hist', 'fwd']:
                 if trace_set in traces:
