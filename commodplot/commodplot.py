@@ -34,7 +34,7 @@ def seas_line_plot(df, fwd=None, **kwargs):
     title = cpu.gen_title(df, **kwargs)
     legend = go.layout.Legend(font=dict(size=10))
     yaxis_title = kwargs.get('yaxis_title', None)
-    fig.update_layout(title=title,  xaxis_tickformat='%b', yaxis_title=yaxis_title, legend=legend)
+    fig.update_layout(title=title, xaxis_tickformat='%b', yaxis_title=yaxis_title, legend=legend)
 
     return fig
 
@@ -59,7 +59,7 @@ def seas_line_subplot(rows, cols, df, fwd=None, **kwargs):
     chartcount = 0
     for row in range(1, rows + 1):
         for col in range(1, cols + 1):
-            #print(row, col)
+            # print(row, col)
             if chartcount > len(df):
                 chartcount += 1
                 continue
@@ -148,24 +148,24 @@ def table_plot(df, **kwargs):
     colheaders = [indexname] + list(df.columns)
     headerfill = ['white' if x == '' else 'grey' for x in colheaders]
 
-
     cols = [df[x] for x in df.columns]
     # apply red/green to formatted_cols
     fcols = kwargs.get('formatted_cols', [])
-    font_color = [['red' if str(y).startswith('-') else 'green' for y in df[x]] if x in fcols else 'black' for x in colheaders]
+    font_color = [['red' if str(y).startswith('-') else 'green' for y in df[x]] if x in fcols else 'black' for x in
+                  colheaders]
 
-    if isinstance(df.index, pd.DatetimeIndex): # if index is datetime, format dates
+    if isinstance(df.index, pd.DatetimeIndex):  # if index is datetime, format dates
         df.index = df.index.map(lambda x: x.strftime('%d-%m-%Y'), 1)
     cols.insert(0, df.index)
 
     fig = go.Figure(data=[go.Table(
         header=dict(values=colheaders, fill_color=headerfill, align='center', font=dict(color='white', size=12)),
         cells=dict(values=cols,
-                   line= dict(color='#506784'),
-                   fill_color= [[row_odd_color,row_even_colour]*len(df)],
+                   line=dict(color='#506784'),
+                   fill_color=[[row_odd_color, row_even_colour] * len(df)],
                    align='right',
                    font_color=font_color,
-            ))
+                   ))
     ])
     return fig
 
@@ -175,8 +175,9 @@ def forward_history_plot(df, title=None, **kwargs):
      Given a dataframe of a curve's pricing history, plot a line chart showing how it has evolved over time
     """
     df = df.rename(columns={x: pd.to_datetime(x) for x in df.columns})
-    df = df[sorted(list(df.columns), reverse=True)] # have latest column first
-    df = df.rename(columns={x: cpu.format_date_col(x, '%d-%b') for x in df.columns}) # make nice labels for legend eg 05-Dec
+    df = df[sorted(list(df.columns), reverse=True)]  # have latest column first
+    df = df.rename(
+        columns={x: cpu.format_date_col(x, '%d-%b') for x in df.columns})  # make nice labels for legend eg 05-Dec
 
     colseq = py.colors.sequential.Aggrnyl
     text = df.index.strftime('%b-%y')
@@ -191,7 +192,7 @@ def forward_history_plot(df, title=None, **kwargs):
 
         colcount = colcount + 1
 
-    fig['data'][0]['line']['width'] = 2.2 # make latest line thicker
+    fig['data'][0]['line']['width'] = 2.2  # make latest line thicker
     legend = go.layout.Legend(font=dict(size=10))
     yaxis_title = kwargs.get('yaxis_title', None)
     fig.update_layout(title=title, xaxis_tickformat='%b-%y', yaxis_title=yaxis_title, legend=legend)
@@ -209,7 +210,7 @@ def bar_line_plot(df, linecol='Total', **kwargs):
     barspecs = {'kind': 'bar', 'barmode': 'relative', 'title': 'd', 'columns': barcols}
     linespecs = {'kind': 'scatter', 'columns': linecol, 'color': 'black'}
 
-    fig = cf.tools.figures(df, [barspecs, linespecs]) # returns dict
+    fig = cf.tools.figures(df, [barspecs, linespecs])  # returns dict
     fig = go.Figure(fig)
     yaxis_title = kwargs.get('yaxis_title', None)
     yaxis_range = kwargs.get('yaxis_range', None)
@@ -240,7 +241,6 @@ def reindex_year_line_plot(df, **kwargs):
         for trace in traces['hist']:
             fig.add_trace(trace)
 
-
     inc_change_sum = kwargs.get('inc_change_sum', True)
     title = kwargs.get('title', '')
     if inc_change_sum:
@@ -251,7 +251,46 @@ def reindex_year_line_plot(df, **kwargs):
     yaxis_title = kwargs.get('yaxis_title', None)
     fig.update_layout(title=title, xaxis_tickformat='%b-%y', yaxis_title=yaxis_title, legend=legend)
     # zoom into last 3 years
-    fig.update_xaxes(type="date", range=[dft.tail(365 * 3).index[0].strftime('%Y-%m-%d'), dft.index[-1].strftime('%Y-%m-%d')])
+    fig.update_xaxes(type="date",
+                     range=[dft.tail(365 * 3).index[0].strftime('%Y-%m-%d'), dft.index[-1].strftime('%Y-%m-%d')])
 
     return fig
 
+
+def reindex_year_line_subplot(rows, cols, dfs, **kwargs):
+    fig = make_subplots(
+        cols=cols,
+        rows=rows,
+        specs=[[{'type': 'scatter'} for x in range(0, cols)] for y in range(0, rows)],
+        subplot_titles=kwargs.get('subplot_titles', None),
+        shared_xaxes=False,
+    )
+
+    chartcount = 0
+    for row in range(1, rows + 1):
+        for col in range(1, cols + 1):
+            # print(row, col)
+            if chartcount > len(dfs):
+                chartcount += 1
+                continue
+            showlegend = True if chartcount == 0 else False
+
+            dfx = dfs[chartcount]
+            dft = transforms.reindex_year(dfx)
+            colsel = cpu.reindex_year_df_rel_col(dft)
+            traces = cptr.reindex_plot_traces(dft, current_select_year=colsel, showlegend=showlegend, **kwargs)
+            for trace_set in ['shaded_range', 'hist']:
+                if trace_set in traces:
+                    for trace in traces[trace_set]:
+                        fig.add_trace(trace, row=row, col=col)
+
+            chartcount += 1
+
+    legend = go.layout.Legend(font=dict(size=10))
+    yaxis_title = kwargs.get('yaxis_title', None)
+    title = kwargs.get('title', '')
+    fig.update_layout(title=title, xaxis_tickformat='%b-%y', yaxis_title=yaxis_title, legend=legend)
+
+    fig.update_xaxes(type="date")
+
+    return fig

@@ -200,16 +200,24 @@ def timeseries_to_seas_trace(seas, text, dash=None, showlegend=True):
 
 def timeseries_to_reindex_year_trace(dft, text, dash=None, current_select_year=None, showlegend=True):
     traces = []
+    colyearmap = cpu.dates.find_year(dft)
+
     for col in dft.columns:
-        width = 2.2 if col >= current_select_year else 1.2
+        colyear = colyearmap[col]
+        width = 1.2
+        if current_select_year: # for current year+ makes lines bolder
+            if isinstance(current_select_year, str):
+                current_select_year = colyearmap[current_select_year]
+            if colyear >= current_select_year:
+                width = 2.2
         trace = go.Scatter(x=dft.index,
                            y=dft[col],
                            hoverinfo='y',
                            name=col,
                            hovertemplate=hist_hover_temp,
                            text=text,
-                           visible=line_visible(col),
-                           line=dict(color=get_year_line_col(col),
+                           visible=line_visible(colyear),
+                           line=dict(color=get_year_line_col(colyear),
                                      dash=dash,
                                      width=width),
                            showlegend=showlegend,
@@ -283,3 +291,5 @@ def reindex_plot_traces(df, **kwargs):
     res['hist'] = timeseries_to_reindex_year_trace(df, text, current_select_year=current_select_year, showlegend=showlegend)
 
     return res
+
+

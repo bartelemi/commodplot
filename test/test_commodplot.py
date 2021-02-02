@@ -51,6 +51,15 @@ class TestCommodplot(unittest.TestCase):
         res = commodplot.reindex_year_line_plot(sp)
         self.assertTrue(isinstance(res, go.Figure))
 
+    def test_reindex_year_line_subplot(self):
+        dr = pd.date_range(start='2015', end='2020-12-31', freq='B')
+        data = {'Q1 2019': [10 for x in dr], 2020: [20 for x in dr], 2021: [30 for x in dr], 2022: [10 for x in dr]}
+        df = pd.DataFrame(data, index=dr)
+        dfs = [df for x in range(1,5)]
+
+        res = commodplot.reindex_year_line_subplot(2, 2, dfs, subplot_titles=['1', '2', '3', '4'])
+        self.assertTrue(isinstance(res, go.Figure))
+
     def test_seas_box_plot(self):
         dirname, filename = os.path.split(os.path.abspath(__file__))
         cl = pd.read_csv(os.path.join(dirname, 'test_cl.csv'), index_col=0, parse_dates=True, dayfirst=True)
