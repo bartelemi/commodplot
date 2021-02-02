@@ -226,32 +226,26 @@ def reindex_year_line_plot(df, **kwargs):
     :param df:
     :return:
     """
-
+    fig = go.Figure()
     dft = transforms.reindex_year(df)
     colsel = cpu.reindex_year_df_rel_col(dft)
+
+    traces = cptr.reindex_plot_traces(dft, current_select_year=colsel, **kwargs)
+
+    if 'shaded_range' in traces:
+        for trace in traces['shaded_range']:
+            fig.add_trace(trace)
+
+    if 'hist' in traces:
+        for trace in traces['hist']:
+            fig.add_trace(trace)
+
+
     inc_change_sum = kwargs.get('inc_change_sum', True)
     title = kwargs.get('title', '')
     if inc_change_sum:
         delta_summ = cpu.delta_summary_str(dft[colsel])
         title = '{}    {}: {}'.format(title, str(colsel).replace(title, ''), delta_summ)
-
-    text = dft.index.strftime('%d-%b')
-    fig = go.Figure()
-
-    shaded_range = kwargs.get('shaded_range', None)
-    if shaded_range is not None:
-        traces = cptr.shaded_range_traces(dft, shaded_range)
-        for trace in traces:
-            fig.add_trace(trace)
-
-    for col in dft.columns:
-        width = 2.2 if col >= colsel else 1.2
-        colyear = cpu.dates.find_year(dft)[col]
-        visibile = cptr.line_visible(colyear)
-        color = cptr.get_year_line_col(colyear)
-        fig.add_trace(
-            go.Scatter(x=dft.index, y=dft[col], hoverinfo='y', name=col, hovertemplate=cptr.hist_hover_temp, text=text,
-                       visible=visibile, line=dict(color=color, width=width)))
 
     legend = go.layout.Legend(font=dict(size=10))
     yaxis_title = kwargs.get('yaxis_title', None)

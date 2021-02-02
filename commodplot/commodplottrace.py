@@ -172,7 +172,7 @@ def shaded_range_traces(seas, shaded_range, showlegend=True):
 
 def timeseries_to_seas_trace(seas, text, dash=None, showlegend=True):
     """
-    Given a dataframe, generate traces for every year
+    Given a dataframe of reindexed data, generate traces for every year
     :param seas:
     :param text:
     :param dash:
@@ -191,6 +191,27 @@ def timeseries_to_seas_trace(seas, text, dash=None, showlegend=True):
                            line=dict(color=get_year_line_col(col),
                                      dash=dash,
                                      width=get_year_line_width(col)),
+                           showlegend=showlegend,
+                           legendgroup=col)
+        traces.append(trace)
+
+    return traces
+
+
+def timeseries_to_reindex_year_trace(dft, text, dash=None, current_select_year=None, showlegend=True):
+    traces = []
+    for col in dft.columns:
+        width = 2.2 if col >= current_select_year else 1.2
+        trace = go.Scatter(x=dft.index,
+                           y=dft[col],
+                           hoverinfo='y',
+                           name=col,
+                           hovertemplate=hist_hover_temp,
+                           text=text,
+                           visible=line_visible(col),
+                           line=dict(color=get_year_line_col(col),
+                                     dash=dash,
+                                     width=width),
                            showlegend=showlegend,
                            legendgroup=col)
         traces.append(trace)
@@ -236,5 +257,29 @@ def seas_plot_traces(df, fwd=None, **kwargs):
         fwdseas = cpt.seasonalise(fwd, histfreq=fwdfreq)
 
         res['fwd'] = timeseries_to_seas_trace(fwdseas, text, showlegend=showlegend, dash='dot')
+
+    return res
+
+
+def reindex_plot_traces(df, **kwargs):
+    """
+    Generate traces for a timeseries that is being turned into a reindex year plot.
+    Gererate yearlines for both historical and the shaded range
+    :param df:
+    :param kwargs:
+    :return:
+    """
+    res = {}
+    showlegend = kwargs.get('showlegend', None)
+    current_select_year = kwargs.get('current_select_year', None)
+
+    text = df.index.strftime('%d-%b')
+
+    shaded_range = kwargs.get('shaded_range', None)
+    if shaded_range is not None:
+        res['shaded_range'] = shaded_range_traces(df, shaded_range, showlegend=showlegend)
+
+    # historical / solid lines
+    res['hist'] = timeseries_to_reindex_year_trace(df, text, current_select_year=current_select_year, showlegend=showlegend)
 
     return res
