@@ -86,6 +86,14 @@ class TestCommodplot(unittest.TestCase):
         res = commodplot.seas_table_plot(cl[cl.columns[-1]], fwd)
         self.assertTrue(isinstance(res, go.Figure))
 
+    def test_diff_plot(self):
+        dirname, filename = os.path.split(os.path.abspath(__file__))
+        cl = pd.read_csv(os.path.join(dirname, 'test_cl.csv'), index_col=0, parse_dates=True, dayfirst=True)
+        cl = cl.dropna(how='all', axis=1)[['CL_2020F', 'CL_2020G']]
+
+        res = commodplot.diff_plot(cl, title='Test')
+        self.assertTrue(isinstance(res, go.Figure))
+
 
 if __name__ == '__main__':
     unittest.main()

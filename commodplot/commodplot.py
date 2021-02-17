@@ -1,6 +1,7 @@
 import pandas as pd
 import plotly as py
 import cufflinks as cf
+import itertools
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 from commodplot import commodplotutil as cpu
@@ -218,6 +219,33 @@ def bar_line_plot(df, linecol='Total', **kwargs):
     fig.update_layout(title=title, xaxis_title='Date', yaxis_title=yaxis_title)
     if yaxis_range is not None:
         fig.update_layout(yaxis=dict(range=yaxis_range))
+    return fig
+
+
+def diff_plot(df, **kwargs):
+    """
+    Given a dataframe, plot each column as line plot with a subplot below
+    showing differences between each column.
+    :param df:
+    :param kwargs:
+    :return:
+    """
+    # calculate difference between each column
+    for comb in (itertools.combinations(df.columns, 2)):
+        df['%s-%s' % (comb[0], comb[1])] = df[comb[0]] - df[comb[1]]
+
+    barcols = [x for x in df.columns if '-' in x]
+    linecols = [x for x in df.columns if '-' not in x]
+
+    fig = make_subplots(rows=2, cols=1, row_heights=[0.8, 0.2], shared_xaxes=True, vertical_spacing=0.02)
+    for col in linecols:
+        fig.add_trace(go.Scatter(x=df.index, y=df[col], name=col))
+
+    for col in barcols:
+        fig.add_trace(go.Bar(x=df.index, y=df[col], name=col), row=2, col=1)
+
+    title = kwargs.get('title', '')
+    fig.update_layout(title_text=title)
     return fig
 
 
