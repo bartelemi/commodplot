@@ -38,9 +38,20 @@ def get_year_line_col(year):
     return year_col_map.get(delta, default_line_col)
 
 
-def line_visible(year):
+def line_visible(year, visible_line_years=None):
+    """
+    Determine the number of year lines to be visible in seasonal plot
+    :param year:
+    :param years_to_include:
+    :return:
+    """
     delta = get_year_line_delta(year)
-    return None if -5 <= delta <= 3 else "legendonly"
+    if visible_line_years:
+        visible_line_years = visible_line_years * -1 # number of years to go back
+    else:
+        visible_line_years = -5 # default to 5
+    # 3 represents number of years in the future to show
+    return None if visible_line_years <= delta <= 3 else "legendonly"
 
 
 def get_year_line_delta(year):
@@ -170,7 +181,7 @@ def shaded_range_traces(seas, shaded_range, showlegend=True):
     return traces
 
 
-def timeseries_to_seas_trace(seas, text, dash=None, showlegend=True):
+def timeseries_to_seas_trace(seas, text, dash=None, showlegend=True, visible_line_years=None):
     """
     Given a dataframe of reindexed data, generate traces for every year
     :param seas:
@@ -187,7 +198,7 @@ def timeseries_to_seas_trace(seas, text, dash=None, showlegend=True):
                            name=col,
                            hovertemplate=hist_hover_temp,
                            text=text,
-                           visible=line_visible(col),
+                           visible=line_visible(col, visible_line_years),
                            line=dict(color=get_year_line_col(col),
                                      dash=dash,
                                      width=get_year_line_width(col)),
@@ -247,6 +258,7 @@ def seas_plot_traces(df, fwd=None, **kwargs):
         text = seas.index.strftime('%d-%b')
 
     showlegend = kwargs.get('showlegend', None)
+    visible_line_years = kwargs.get('visible_line_years', None)
 
     # shaded range
     shaded_range = kwargs.get('shaded_range', None)
@@ -254,7 +266,7 @@ def seas_plot_traces(df, fwd=None, **kwargs):
         res['shaded_range'] = shaded_range_traces(seas, shaded_range, showlegend=showlegend)
 
     # historical / solid lines
-    res['hist'] = timeseries_to_seas_trace(seas, text, showlegend=showlegend)
+    res['hist'] = timeseries_to_seas_trace(seas, text, showlegend=showlegend, visible_line_years=visible_line_years)
 
     # fwd / dotted lines
     if fwd is not None:
