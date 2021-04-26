@@ -178,7 +178,7 @@ def forward_history_plot(df, title=None, **kwargs):
     df = df.rename(columns={x: pd.to_datetime(x) for x in df.columns})
     df = df[sorted(list(df.columns), reverse=True)]  # have latest column first
     df = df.rename(
-        columns={x: cpu.format_date_col(x, '%d-%b') for x in df.columns})  # make nice labels for legend eg 05-Dec
+        columns={x: cpu.format_date_col(x, '%d-%b-%y') for x in df.columns})  # make nice labels for legend eg 05-Dec
 
     colseq = py.colors.sequential.Aggrnyl
     text = df.index.strftime('%b-%y')
