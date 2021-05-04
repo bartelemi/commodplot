@@ -8,7 +8,7 @@ import numpy as np
 
 
 default_line_col = 'khaki'
-hist_hover_temp = '<i>%{text}</i>: %{y:.2f}'
+hovertemplate_default = '%{y:.2f}: <i>%{text}</i>'
 
 # try to put deeper colours for recent years, lighter colours for older years
 year_col_map = {
@@ -168,7 +168,7 @@ def shaded_range_traces(seas, shaded_range, showlegend=True):
                            y=seas[col],
                            hoverinfo='y',
                            name=col,
-                           hovertemplate=hist_hover_temp,
+                           hovertemplate=hovertemplate_default,
                            text=text,
                            visible=cptr.line_visible(col),
                            line=dict(color=cptr.get_year_line_col(col),
@@ -196,7 +196,7 @@ def timeseries_to_seas_trace(seas, text, dash=None, showlegend=True, visible_lin
                            y=seas[col],
                            hoverinfo='y',
                            name=col,
-                           hovertemplate=hist_hover_temp,
+                           hovertemplate=hovertemplate_default,
                            text=text,
                            visible=line_visible(col, visible_line_years),
                            line=dict(color=get_year_line_col(col),
@@ -225,7 +225,7 @@ def timeseries_to_reindex_year_trace(dft, text, dash=None, current_select_year=N
                            y=dft[col],
                            hoverinfo='y',
                            name=col,
-                           hovertemplate=hist_hover_temp,
+                           hovertemplate=hovertemplate_default,
                            text=text,
                            visible=line_visible(colyear),
                            line=dict(color=get_year_line_col(colyear),
@@ -305,3 +305,86 @@ def reindex_plot_traces(df, **kwargs):
     return res
 
 
+def timeseries_trace(series: pd.Series, **kwargs) -> go.Scatter:
+    """
+    Return a standard timeseries trace for use in a plotly figure
+    :param series: Pandas timeseries of data
+    :param kwargs: kwargs for various formatting options
+    :return:
+    """
+    series = series.dropna()
+
+    # name
+    name = series.name
+    if not isinstance(name, str):
+        name = str(name)
+
+    # hover text formatting
+    hover_date_format = kwargs.get('hover_date_format', '%d-%b-%y')
+
+    t = go.Scatter(
+        x=series.index,
+        y=series.values,
+        hoverinfo='y',
+        name=name,
+        hovertemplate=kwargs.get('hovertemplate', hovertemplate_default),
+        text=series.index.strftime(hover_date_format),
+        visible=kwargs.get('visible'),
+        line=dict(
+            width=kwargs.get('width'),
+            color=kwargs.get('color'),
+            dash=kwargs.get('dash')
+        ),
+        legendgroup=kwargs.get('legendgroup'),
+        showlegend=kwargs.get('showlegend')
+    )
+    return t
+
+
+def timeseries_trace_by_year(series: pd.Series, colyear:int, promptyear:int=None, **kwargs) -> go.Scatter:
+    """
+    Return a timeseries trace with formatting applied for a given year
+    Use the standardised colors for relative years. Eg current year = black
+    Make current and future year lines thicker
+    :param series: Pandas timeseries of data
+    :param colyear: The year represented by this timeseries (if label is different)
+    :param promptyear: Year to use when calculating forward years, eg if end of 2020, then make 2021 the prompt year
+    :param kwargs:
+    :return:
+    """
+    width = None
+    if promptyear:  # for current year+ makes lines bolder
+        if colyear >= promptyear:
+            width = 2.2
+
+    visible = line_visible(colyear, visible_line_years=kwargs.get('visible_line_years'))
+    color = get_year_line_col(colyear)
+
+    t = timeseries_trace(series,
+                         colyear=colyear,
+                         promptyear=promptyear,
+                         width=width,
+                         visible=visible,
+                         color=color)
+    return t
+
+
+def line_plot_traces(df, **kwargs):
+    """
+    Generate traces for a timeseries
+    :param df:
+    :param kwargs:
+    :return:
+    """
+    traces = []
+    colyearmap = cpu.dates.find_year(df)
+    for col in df.columns:
+        colyear = colyearmap[col]
+        if colyear:
+            trace = timeseries_trace_by_year(df[col], colyear)  # , text, **kwargs)
+        else:
+            trace = timeseries_trace(df[col])  #
+
+        traces.append(trace)
+
+    return traces

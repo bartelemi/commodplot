@@ -189,7 +189,7 @@ def forward_history_plot(df, title=None, **kwargs):
         color = colseq[colcount] if colcount < len(colseq) else colseq[-1]
         fig.add_trace(
             go.Scatter(x=df.index, y=df[col], hoverinfo='y', name=str(col), line=dict(color=color),
-                       hovertemplate=cptr.hist_hover_temp, text=text))
+                       hovertemplate=cptr.hovertemplate_default, text=text))
 
         colcount = colcount + 1
 
@@ -321,4 +321,17 @@ def reindex_year_line_subplot(rows, cols, dfs, **kwargs):
 
     fig.update_xaxes(type="date")
 
+    return fig
+
+
+def line_plot(df, **kwargs):
+    fig = go.Figure()
+    traces = cptr.line_plot_traces(df, **kwargs)
+    for trace in traces:
+        fig.add_trace(trace)
+
+    title = cpu.gen_title(df, inc_change_sum=False, **kwargs)
+    legend = go.layout.Legend(font=dict(size=10))
+    yaxis_title = kwargs.get('yaxis_title', None)
+    fig.update_layout(title=title, yaxis_title=yaxis_title, legend=legend)
     return fig
