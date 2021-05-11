@@ -90,7 +90,33 @@ def std_yr_col(df, asdict=False):
     return [colmap[x] for x in df]
 
 
-def min_max_range(seas, shaded_range):
+def clean_seas_df_for_min_max_average(seas, range):
+    """
+    Given a seasonalised dataframe, clean to handle missing data
+    :param seas:
+    :return:
+    """
+    seas = seas.dropna(how='all', axis=1)
+    seasf = seas.rename(columns=dates.find_year(seas))
+
+    # only consider when we have full(er) data for a given range
+    fulldata = pd.DataFrame(seasf.isna().sum())  # count non-na values
+    if not (fulldata == 0).all().iloc[0]:  # line below doesn't apply when we have full data for all columns
+        fulldata = fulldata[fulldata.apply(lambda x: np.abs(x - x.mean()) / x.std() < 1.5).all(
+            axis=1)]  # filter columns with high emtply values
+    seasf = seasf[fulldata.index]  # use these column names only
+
+    if isinstance(range, int):
+        end_year = dates.curyear - 1
+        start_year = end_year - (range - 1)
+    else:
+        start_year, end_year = range[0], range[1]
+
+    r = seasf[[x for x in seasf.columns if x >= start_year and x <= end_year]]
+    return r
+
+
+def min_max_mean_range(seas, shaded_range):
     """
     Calculate min and max for seas
     If an int eg 5, then do curyear -1 and curyear -6
@@ -99,26 +125,13 @@ def min_max_range(seas, shaded_range):
     :param shaded_range:
     :return:
     """
-    seas = seas.dropna(how='all', axis=1)
-    seasf = seas.rename(columns=dates.find_year(seas))
+    r = clean_seas_df_for_min_max_average(seas, shaded_range)
 
-    # only consider when we have full(er) data for a given range
-    fulldata = pd.DataFrame(seasf.isna().sum()) # count non-na values
-    if not (fulldata == 0).all().iloc[0]: # line below doesn't apple when we have full data for all columns
-        fulldata = fulldata[fulldata.apply(lambda x: np.abs(x - x.mean()) / x.std() < 1.5).all(axis=1)] # filter columns with high emtply values
-    seasf = seasf[fulldata.index] # use these column names only
-
-    if isinstance(shaded_range, int):
-        end_year = dates.curyear - 1
-        start_year = end_year - (shaded_range - 1)
-    else:
-        start_year, end_year = shaded_range[0], shaded_range[1]
-
-    r = seasf[[x for x in seasf.columns if x >= start_year and x <= end_year]]
     res = r.copy()
     res['min'] = res.min(1)
     res['max'] = res.max(1)
-    res = res[['min', 'max']]
+    res['mean'] = res.mean(1)
+    res = res[['min', 'max', 'mean']]
 
     if len(r.columns) >= 2:
         rangeyr = int(len(r.columns)) # end_year - start_year
@@ -136,7 +149,7 @@ def shaded_range_traces(seas, shaded_range, showlegend=True):
     :param showlegend:
     :return:
     """
-    r, rangeyr = min_max_range(seas, shaded_range)
+    r, rangeyr = min_max_mean_range(seas, shaded_range)
     if rangeyr is not None:
         traces = []
         max_trace = go.Scatter(x=r.index,
@@ -162,23 +175,26 @@ def shaded_range_traces(seas, shaded_range, showlegend=True):
     return traces
 
 
-    traces = []
-    for col in seas.columns:
-        trace = go.Scatter(x=seas.index,
-                           y=seas[col],
-                           hoverinfo='y',
-                           name=col,
-                           hovertemplate=hovertemplate_default,
-                           text=text,
-                           visible=cptr.line_visible(col),
-                           line=dict(color=cptr.get_year_line_col(col),
-                                     dash=dash,
-                                     width=cptr.get_year_line_width(col)),
-                           showlegend=showlegend,
-                           legendgroup=col)
-        traces.append(trace)
-
-    return traces
+def average_line_trace(seas, average_line):
+    """
+    Given a dataframe, calculate the mean for every day of the year
+    and return this as a trace for the average line
+    :param seas:
+    :param average_line:
+    :return:
+    """
+    r, rangeyr = min_max_mean_range(seas, average_line)
+    trace = go.Scatter(x=r.index,
+                               y=r['mean'].values,
+                               fill=None,
+                               name='%syr Avg' % rangeyr,
+                               mode='lines',
+                               line_width=0.4,
+                               line_color='darkslategray',
+                               line=dict(dash='dash'),
+                               showlegend=True,
+                               legendgroup='avg')
+    return trace
 
 
 def timeseries_to_seas_trace(seas, text, dash=None, showlegend=True, visible_line_years=None):
@@ -264,6 +280,11 @@ def seas_plot_traces(df, fwd=None, **kwargs):
     shaded_range = kwargs.get('shaded_range', None)
     if shaded_range is not None:
         res['shaded_range'] = shaded_range_traces(seas, shaded_range, showlegend=showlegend)
+
+    # average line
+    average_line = kwargs.get('average_line', None)
+    if average_line is not None:
+        res['average_line'] = average_line_trace(seas, average_line)
 
     # historical / solid lines
     res['hist'] = timeseries_to_seas_trace(seas, text, showlegend=showlegend, visible_line_years=visible_line_years)

@@ -22,6 +22,9 @@ def seas_line_plot(df, fwd=None, **kwargs):
         for trace in traces['shaded_range']:
             fig.add_trace(trace)
 
+    if 'average_line' in traces:
+        fig.add_trace(traces['average_line'])
+
     if 'hist' in traces:
         for trace in traces['hist']:
             fig.add_trace(trace)
