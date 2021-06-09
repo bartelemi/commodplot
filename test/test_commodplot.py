@@ -97,8 +97,20 @@ class TestCommodplot(unittest.TestCase):
     def test_line_plot(self):
         dirname, filename = os.path.split(os.path.abspath(__file__))
         cl = pd.read_csv(os.path.join(dirname, 'test_cl.csv'), index_col=0, parse_dates=True, dayfirst=True)
+        cl = cl.dropna(how='all', axis=1)[['CL_2019F', 'CL_2020G']]
+        fwd = pd.DataFrame([[50 for x in range(2)]], index=pd.date_range('2021-01-01', periods=12, freq='MS'), columns=['CL_2019F', 'CL_2020G'])
+
+        res = commodplot.line_plot(cl, fwd=fwd, title='Test')
+        self.assertTrue(isinstance(res, go.Figure))
+
+    def test_line_plot2(self):
+        dirname, filename = os.path.split(os.path.abspath(__file__))
+        cl = pd.read_csv(os.path.join(dirname, 'test_cl.csv'), index_col=0, parse_dates=True, dayfirst=True)
         cl = cl.dropna(how='all', axis=1)[['CL_2020F', 'CL_2020G']]
-        res = commodplot.line_plot(cl, title='Test')
+        cl = cl.rename(columns={'CL_2020F' : 'A', 'CL_2020G' : 'B'})
+        fwd = pd.DataFrame([[50 for x in range(2)]], index=pd.date_range('2021-01-01', periods=12, freq='MS'), columns=['A', 'B'])
+
+        res = commodplot.line_plot(cl, fwd=fwd, title='Test')
         self.assertTrue(isinstance(res, go.Figure))
 
 

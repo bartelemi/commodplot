@@ -2,6 +2,7 @@ from commodutil import dates
 from commodutil import transforms
 from commodplot import commodplotutil as cpu
 from commodplot import commodplottransform as cpt
+import plotly
 import plotly.graph_objects as go
 import pandas as pd
 import numpy as np
@@ -38,6 +39,17 @@ def get_year_line_col(year):
     return year_col_map.get(delta, default_line_col)
 
 
+def get_sequence_line_col(seqno: int):
+    """
+    Given a sequence number select the colour from default plotly palette
+    Required for line plot where history and forward should be same color
+    :param seqno:
+    :return:
+    """
+    if seqno <= len(plotly.colors.qualitative.Plotly):
+        return plotly.colors.qualitative.Plotly[seqno]
+
+
 def line_visible(year, visible_line_years=None):
     """
     Determine the number of year lines to be visible in seasonal plot
@@ -46,6 +58,8 @@ def line_visible(year, visible_line_years=None):
     :return:
     """
     delta = get_year_line_delta(year)
+    if delta is None:
+        return None
     if visible_line_years:
         visible_line_years = visible_line_years * -1 # number of years to go back
     else:
@@ -58,8 +72,8 @@ def get_year_line_delta(year):
     if isinstance(year, str) and year.isnumeric():
         year = int(year)
 
-        delta = year - dates.curyear
-        return delta
+    delta = year - dates.curyear
+    return delta
 
 
 def get_year_line_width(year):
@@ -386,26 +400,44 @@ def timeseries_trace_by_year(series: pd.Series, colyear:int, promptyear:int=None
                          promptyear=promptyear,
                          width=width,
                          visible=visible,
-                         color=color)
+                         color=color,
+                         legendgroup=kwargs.get('legendgroup'),
+                         showlegend=kwargs.get('showlegend'))
     return t
 
 
-def line_plot_traces(df, **kwargs):
+def line_plot_traces(df, fwd=None, **kwargs):
     """
-    Generate traces for a timeseries
+    Generate traces for a timeseries. If historic and forward values are passed,
+    then show solid lines followed by forward lines
     :param df:
     :param kwargs:
     :return:
     """
     traces = []
     colyearmap = cpu.dates.find_year(df)
+    colcount = 0
     for col in df.columns:
         colyear = colyearmap[col]
-        if colyear:
-            trace = timeseries_trace_by_year(df[col], colyear)  # , text, **kwargs)
+        if isinstance(colyear, int) or (isinstance(colyear, str) and colyear.isnumeric()):
+            trace = timeseries_trace_by_year(df[col], colyear, legendgroup=col)  # , text, **kwargs)
         else:
-            trace = timeseries_trace(df[col])  #
+            trace = timeseries_trace(df[col], legendgroup=col, color=get_sequence_line_col(colcount))  #
 
         traces.append(trace)
+
+        if fwd is not None and col in fwd.columns:
+            f = fwd[col]
+            fwdfreq = pd.infer_freq(f.index)
+            if fwdfreq in ['MS', 'ME']:
+                f = transforms.format_fwd(f, df.index[-1])  # only applies for forward curves
+            if isinstance(colyear, int) or (isinstance(colyear, str) and colyear.isnumeric()):
+                trace = timeseries_trace_by_year(f, colyear, legendgroup=col, showlegend=False,)  # , text, **kwargs)
+            else:
+                trace = timeseries_trace(f, dash='dash', legendgroup=col, showlegend=False,
+                                         color=get_sequence_line_col(colcount))
+            traces.append(trace)
+
+        colcount = colcount + 1
 
     return traces

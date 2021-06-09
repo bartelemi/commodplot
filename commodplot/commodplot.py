@@ -327,10 +327,10 @@ def reindex_year_line_subplot(rows, cols, dfs, **kwargs):
     return fig
 
 
-def line_plot(df, **kwargs):
+def line_plot(df, fwd=None, **kwargs):
     fig = go.Figure()
-    traces = cptr.line_plot_traces(df, **kwargs)
-    for trace in traces:
+    res = cptr.line_plot_traces(df, fwd, **kwargs)
+    for trace in res:
         fig.add_trace(trace)
 
     title = cpu.gen_title(df, inc_change_sum=False, **kwargs)
