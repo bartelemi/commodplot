@@ -55,11 +55,11 @@ def line_visible(year, visible_line_years=None):
 
 
 def get_year_line_delta(year):
-    if isinstance(year, str):
+    if isinstance(year, str) and year.isnumeric():
         year = int(year)
 
-    delta = year - dates.curyear
-    return delta
+        delta = year - dates.curyear
+        return delta
 
 
 def get_year_line_width(year):
