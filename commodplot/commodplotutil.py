@@ -5,6 +5,28 @@ import base64
 from commodutil import transforms
 from commodutil import dates
 
+default_line_col = 'khaki'
+
+
+# try to put deeper colours for recent years, lighter colours for older years
+year_col_map = {
+    -10: 'wheat',
+    -9: 'burlywood',
+    -8: 'steelblue',
+    -7: 'aquamarine',
+    -6: 'orange',
+    -5: 'yellow',
+    -4: 'saddlebrown',
+    -3: 'mediumblue',
+    -2: 'darkgreen',
+    -1: 'coral',
+    0: 'black',
+    1: 'red',
+    2: 'firebrick',
+    3: 'darkred',
+    4: 'crimson',
+}
+
 
 # margin to use in HTML charts - make charts bigger but leave space for title
 narrow_margin = {'l':2, 'r':2, 't':30, 'b':10}
@@ -190,3 +212,24 @@ def jinja_finalize(value):
         return plhtml(value)
 
     return value
+
+
+def std_yr_col(df, asdict=False):
+    """
+    Given a dataframe with yearly columns, determine the line colour to use
+    """
+
+    if isinstance(df, pd.Series):
+        df = pd.DataFrame(df)
+
+    yearmap = dates.find_year(df, use_delta=True)
+    colmap = {}
+    for colname, delta in yearmap.items():
+        colmap[colname] = year_col_map.get(delta, default_line_col)
+
+    if asdict:
+        return colmap
+
+    # return array of colours to use - this can be passed into cufflift iplot method
+    return [colmap[x] for x in df]
+

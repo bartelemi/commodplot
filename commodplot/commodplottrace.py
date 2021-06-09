@@ -7,28 +7,9 @@ import plotly.graph_objects as go
 import pandas as pd
 import numpy as np
 
+from commodplot.commodplotutil import default_line_col, year_col_map
 
-default_line_col = 'khaki'
 hovertemplate_default = '%{y:.2f}: <i>%{text}</i>'
-
-# try to put deeper colours for recent years, lighter colours for older years
-year_col_map = {
-    -10: 'wheat',
-    -9: 'burlywood',
-    -8: 'steelblue',
-    -7: 'aquamarine',
-    -6: 'orange',
-    -5: 'yellow',
-    -4: 'saddlebrown',
-    -3: 'mediumblue',
-    -2: 'darkgreen',
-    -1: 'coral',
-    0: 'black',
-    1: 'red',
-    2: 'firebrick',
-    3: 'darkred',
-    4: 'crimson',
-}
 
 
 def get_year_line_col(year):
@@ -82,26 +63,6 @@ def get_year_line_width(year):
         return 3
 
     return 2
-
-
-def std_yr_col(df, asdict=False):
-    """
-    Given a dataframe with yearly columns, determine the line colour to use
-    """
-
-    if isinstance(df, pd.Series):
-        df = pd.DataFrame(df)
-
-    yearmap = dates.find_year(df, use_delta=True)
-    colmap = {}
-    for colname, delta in yearmap.items():
-        colmap[colname] = year_col_map.get(delta, default_line_col)
-
-    if asdict:
-        return colmap
-
-    # return array of colours to use - this can be passed into cufflift iplot method
-    return [colmap[x] for x in df]
 
 
 def clean_seas_df_for_min_max_average(seas, range):
