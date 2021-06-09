@@ -28,10 +28,6 @@ year_col_map = {
 }
 
 
-# margin to use in HTML charts - make charts bigger but leave space for title
-narrow_margin = {'l':2, 'r':2, 't':30, 'b':10}
-
-
 def gen_title(df, **kwargs):
     title = kwargs.get('title', '')
     inc_change_sum = kwargs.get('inc_change_sum', True)
@@ -148,32 +144,7 @@ def infer_freq(df):
     return histfreq
 
 
-def plhtml(fig, margin=narrow_margin, **kwargs):
-    """
-    Given a plotly figure, return it as a div
-    """
-    # if 'margin' in kwargs:
-    if fig is not None:
-        fig.update_layout(margin=margin)
 
-        fig.update_xaxes(automargin=True)
-        fig.update_yaxes(automargin=True)
-        return pl.offline.plot(fig, include_plotlyjs=False, output_type='div')
-
-    return ''
-
-
-def convert_dict_plotly_fig_html_div(d):
-    """
-    Given a dict (that might be passed to jinja), convert all plotly figures of html divs
-    """
-    for k, v in d.items():
-        if isinstance(d[k], go.Figure):
-            d[k] = plhtml(d[k])
-        if isinstance(d[k], dict):
-            convert_dict_plotly_fig_html_div(d[k])
-
-    return d
 
 
 def plpng(fig):
@@ -199,19 +170,7 @@ def convert_dict_plotly_fig_png(d):
     return d
 
 
-def jinja_finalize(value):
-    """
-    Finalize for jinja which makes empty entries show as blank rather than none
-    and converts plotly charts to html divs
-    :param value:
-    :return:
-    """
-    if value is None:
-        return ''
-    if isinstance(value, go.Figure):
-        return plhtml(value)
 
-    return value
 
 
 def std_yr_col(df, asdict=False):
