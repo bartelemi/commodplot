@@ -2,8 +2,12 @@ import pandas as pd
 import plotly.graph_objects as go
 import plotly as pl
 import base64
+from datetime import datetime
 from commodutil import transforms
 from commodutil import dates
+from jinja2 import Environment, FileSystemLoader
+import logging
+import os
 
 default_line_col = 'khaki'
 
@@ -212,6 +216,32 @@ def jinja_finalize(value):
         return plhtml(value)
 
     return value
+
+
+def render_html(data, template, filename):
+    """
+    Using a Jinja2 template, render a html file and save to disk
+    :param data: dict of jinja parameters to include in rendered html
+    :param template: absolute location of template file
+    :param filename: location of where rendered html file should be output
+    :return:
+    """
+    data = convert_dict_plotly_fig_html_div(data)
+
+    tdirname, tfilename = os.path.split(os.path.abspath(template))
+    file_loader = FileSystemLoader(tdirname)
+    env = Environment(loader=file_loader)
+    env.finalize = jinja_finalize
+    template = env.get_template(tfilename)
+
+    logging.info('Writing dash {} to {}'.format(data['name'], filename))
+
+    # template.globals['fcu'] = fcu
+    output = template.render(pagetitle=data['name'], last_gen_time=datetime.now(), data=data)
+    with open(filename, "w", encoding='utf8') as fh:
+        fh.write(output)
+
+    return filename
 
 
 def std_yr_col(df, asdict=False):
