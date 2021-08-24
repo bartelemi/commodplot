@@ -40,8 +40,8 @@ class TestCommodPlotUtil(unittest.TestCase):
             os.remove(test_out_loc)
 
         data = { 'name' : 'test' }
-        tfloc = os.path.join(os.path.join(os.path.join(dirname, os.pardir), 'templates'), 'base.html')
-        f = cpu.render_html(data, tfloc, 'test.html')
+
+        f = cpu.render_html(data, 'base.html', 'test.html', package_loader_name='commodplot')
 
         self.assertTrue(test_out_loc)
         if os.path.exists(test_out_loc):

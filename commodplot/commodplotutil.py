@@ -5,7 +5,7 @@ import base64
 from datetime import datetime
 from commodutil import transforms
 from commodutil import dates
-from jinja2 import Environment, FileSystemLoader
+from jinja2 import Environment, FileSystemLoader, PackageLoader
 import logging
 import os
 
@@ -218,19 +218,23 @@ def jinja_finalize(value):
     return value
 
 
-def render_html(data, template, filename):
+def render_html(data, template, filename, package_loader_name=None):
     """
     Using a Jinja2 template, render a html file and save to disk
     :param data: dict of jinja parameters to include in rendered html
     :param template: absolute location of template file
     :param filename: location of where rendered html file should be output
+    :param package_loader_name: if using PackageLoader instead of FileLoader specify package name
     :return:
     """
     data = convert_dict_plotly_fig_html_div(data)
 
     tdirname, tfilename = os.path.split(os.path.abspath(template))
-    file_loader = FileSystemLoader(tdirname)
-    env = Environment(loader=file_loader)
+    if package_loader_name:
+        loader = PackageLoader(package_loader_name, 'templates')
+    else:
+        loader = FileSystemLoader(tdirname)
+    env = Environment(loader=loader)
     env.finalize = jinja_finalize
     template = env.get_template(tfilename)
 
