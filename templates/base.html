@@ -1,17 +1,14 @@
 <!DOCTYPE html>
 <html lang="en">
-<html>
     <head>
       <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
-      <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-+0n0xVW2eSR5OomGNYDnhzAbDsOXxcvSN1TPprVMTNDbiYZCxYbOOl7+AMvyTG2x" crossorigin="anonymous">
-      <title>{{ pagetitle }}</title>
+      <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-KyZXEAg3QhqLMpG8r+8fhAXLRk2vvoC2f3B09zVXn8CA5QIVfZOJ3BCsw2P0p/We" crossorigin="anonymous">
+      <title>{{ title }}</title>
     </head>
     <body>
         <p>Last generated: {{ last_gen_time.strftime('%d %b %Y %H:%M') }}</p>
-        <a name="top">
+        <a id="top"></a>
 
-
-        <h2>{{ pagetitle }}</h2>
 
         {% block content %}{% endblock %}
 
