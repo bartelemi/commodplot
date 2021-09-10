@@ -288,6 +288,29 @@ def reindex_year_line_plot(df, **kwargs):
     return fig
 
 
+def candle_chart(df, **kwargs):
+    fig = go.Figure(data=[go.Candlestick(x=df.index,
+                                         open=df['Open'],
+                                         high=df['High'],
+                                         low=df['Low'],
+                                         close=df['Close'])])
+
+    title = cpu.gen_title(df['Close'], **kwargs)
+    fig.update_layout(title=title)
+    return fig
+
+
+def stacked_area_chart(df, **kwargs):
+    fig = go.Figure()
+    group = kwargs.get('stackgroup', 'stackgroup')
+
+    for col in df.columns:
+        fig.add_trace(go.Scatter(x=df.index, y=df[col], name=col, stackgroup=group))
+
+    fig.update_layout(title=kwargs.get('title', ''))
+    return fig
+
+
 def reindex_year_line_subplot(rows, cols, dfs, **kwargs):
     fig = make_subplots(
         cols=cols,
