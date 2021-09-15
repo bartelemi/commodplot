@@ -1,6 +1,7 @@
 import unittest
 import plotly.express as px
 import cufflinks as cf
+import pandas as pd
 from commodplot import commodplotutil as cpu
 import os
 
@@ -18,6 +19,20 @@ class TestCommodPlotUtil(unittest.TestCase):
 
         self.assertIn(str(m1.round(2)), res)
         self.assertIn(str(diff.round(2)), res)
+
+    def test_gen_title(self):
+        df = pd.DataFrame([1, 2, 3], columns=['Test'])
+
+        res = cpu.gen_title(df, title=None)
+        self.assertTrue(res.startswith('3'))
+
+        res = cpu.gen_title(df, title='TTitle')
+        self.assertTrue(res.startswith('TTitle'))
+        self.assertTrue(res.endswith('+1'))
+
+        res = cpu.gen_title(df, title='TTitle', title_postfix='post')
+        self.assertTrue(res.startswith('TTitle  post:'))
+        self.assertTrue(res.endswith('+1'))
 
     def test_convert_dict_plotly_fig_html_div(self):
         df = px.data.gapminder().query("country=='Canada'")

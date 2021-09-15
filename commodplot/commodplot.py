@@ -272,11 +272,8 @@ def reindex_year_line_plot(df, **kwargs):
         for trace in traces['hist']:
             fig.add_trace(trace)
 
-    inc_change_sum = kwargs.get('inc_change_sum', True)
-    title = kwargs.get('title', '')
-    if inc_change_sum:
-        delta_summ = cpu.delta_summary_str(dft[colsel])
-        title = '{}    {}: {}'.format(title, str(colsel).replace(title, ''), delta_summ)
+    kwargs['title_postfix'] = colsel
+    title = cpu.gen_title(df[colsel], title_prefix=colsel, **kwargs)
 
     legend = go.layout.Legend(font=dict(size=10))
     yaxis_title = kwargs.get('yaxis_title', None)

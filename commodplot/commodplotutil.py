@@ -38,15 +38,25 @@ narrow_margin = {'l':2, 'r':2, 't':30, 'b':10}
 
 def gen_title(df, **kwargs):
     title = kwargs.get('title', '')
+    title_postfix = kwargs.get('title_postfix', '')
     inc_change_sum = kwargs.get('inc_change_sum', True)
     if inc_change_sum:
         if title:
-            title = '{}   {}'.format(title, delta_summary_str(df))
+            if title_postfix:
+                title = '{}  {}: {}'.format(title, title_postfix, delta_summary_str(df))
+            else:
+                title = '{}   {}'.format(title, delta_summary_str(df))
         else:
-            title = delta_summary_str(df)
+            if title_postfix:
+                title = '{}   {}'.format(title_postfix, delta_summary_str(df))
+            else:
+                title = delta_summary_str(df)
     else:
         if title:
-            title = title
+            if title_postfix:
+                title = '{}  {}'.format(title, title_postfix)
+            else:
+                title = title
 
     return title
 
