@@ -40,7 +40,13 @@ def gen_title(df, **kwargs):
     title = kwargs.get('title', '')
     inc_change_sum = kwargs.get('inc_change_sum', True)
     if inc_change_sum:
-        title = '{}   {}'.format(title, delta_summary_str(df))
+        if title:
+            title = '{}   {}'.format(title, delta_summary_str(df))
+        else:
+            title = delta_summary_str(df)
+    else:
+        if title:
+            title = title
 
     return title
 
