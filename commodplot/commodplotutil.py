@@ -151,7 +151,7 @@ def reindex_year_df_rel_col(df):
             delta = last_val_date - relcol_date
             if delta.days < 10:
                 relyear1 = (relyear + pd.DateOffset(years=1)).year
-                relyear1 = [x for x in df.columns if str(relyear1) == str(x)]
+                relyear1 = [x for x in df.columns if str(relyear1) in str(x)]
                 if len(relyear1) > 0:
                     return relyear1[0]
             else:
