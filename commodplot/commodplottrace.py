@@ -1,12 +1,13 @@
-from commodutil import dates
-from commodutil import transforms
-from commodplot import commodplotutil as cpu
-from commodplot import commodplottransform as cpt
+import numpy as np
+import numpy as np
+import pandas as pd
 import plotly
 import plotly.graph_objects as go
-import pandas as pd
-import numpy as np
+from commodutil import dates
+from commodutil import transforms
 
+from commodplot import commodplottransform as cpt
+from commodplot import commodplotutil as cpu
 from commodplot.commodplotutil import default_line_col, year_col_map
 
 hovertemplate_default = '%{y:.2f}: <i>%{text}</i>'
@@ -42,9 +43,9 @@ def line_visible(year, visible_line_years=None):
     if delta is None:
         return None
     if visible_line_years:
-        visible_line_years = visible_line_years * -1 # number of years to go back
+        visible_line_years = visible_line_years * -1  # number of years to go back
     else:
-        visible_line_years = -5 # default to 5
+        visible_line_years = -5  # default to 5
     # 3 represents number of years in the future to show
     return None if visible_line_years <= delta <= 3 else "legendonly"
 
@@ -109,7 +110,7 @@ def min_max_mean_range(seas, shaded_range):
     res = res[['min', 'max', 'mean']]
 
     if len(r.columns) >= 2:
-        rangeyr = int(len(r.columns)) # end_year - start_year
+        rangeyr = int(len(r.columns))  # end_year - start_year
     else:
         rangeyr = None
     return res, rangeyr
@@ -160,15 +161,15 @@ def average_line_trace(seas, average_line):
     """
     r, rangeyr = min_max_mean_range(seas, average_line)
     trace = go.Scatter(x=r.index,
-                               y=r['mean'].values,
-                               fill=None,
-                               name='%syr Avg' % rangeyr,
-                               mode='lines',
-                               line_width=0.4,
-                               line_color='darkslategray',
-                               line=dict(dash='dash'),
-                               showlegend=True,
-                               legendgroup='avg')
+                       y=r['mean'].values,
+                       fill=None,
+                       name='%syr Avg' % rangeyr,
+                       mode='lines',
+                       line_width=0.4,
+                       line_color='darkslategray',
+                       line=dict(dash='dash'),
+                       showlegend=True,
+                       legendgroup='avg')
     return trace
 
 
@@ -207,7 +208,7 @@ def timeseries_to_reindex_year_trace(dft, text, dash=None, current_select_year=N
     for col in dft.columns:
         colyear = colyearmap[col]
         width = 1.2
-        if current_select_year: # for current year+ makes lines bolder
+        if current_select_year:  # for current year+ makes lines bolder
             if isinstance(current_select_year, str):
                 current_select_year = colyearmap[current_select_year]
             if colyear >= current_select_year:
@@ -296,7 +297,8 @@ def reindex_plot_traces(df, **kwargs):
         res['shaded_range'] = shaded_range_traces(df, shaded_range, showlegend=showlegend)
 
     # historical / solid lines
-    res['hist'] = timeseries_to_reindex_year_trace(df, text, current_select_year=current_select_year, showlegend=showlegend)
+    res['hist'] = timeseries_to_reindex_year_trace(df, text, current_select_year=current_select_year,
+                                                   showlegend=showlegend)
 
     return res
 
@@ -337,7 +339,7 @@ def timeseries_trace(series: pd.Series, **kwargs) -> go.Scatter:
     return t
 
 
-def timeseries_trace_by_year(series: pd.Series, colyear:int, promptyear:int=None, **kwargs) -> go.Scatter:
+def timeseries_trace_by_year(series: pd.Series, colyear: int, promptyear: int = None, **kwargs) -> go.Scatter:
     """
     Return a timeseries trace with formatting applied for a given year
     Use the standardised colors for relative years. Eg current year = black
@@ -393,7 +395,7 @@ def line_plot_traces(df, fwd=None, **kwargs):
             if fwdfreq in ['MS', 'ME']:
                 f = transforms.format_fwd(f, df.index[-1])  # only applies for forward curves
             if isinstance(colyear, int) or (isinstance(colyear, str) and colyear.isnumeric()):
-                trace = timeseries_trace_by_year(f, colyear, legendgroup=col, showlegend=False,)  # , text, **kwargs)
+                trace = timeseries_trace_by_year(f, colyear, legendgroup=col, showlegend=False, )  # , text, **kwargs)
             else:
                 trace = timeseries_trace(f, dash='dash', legendgroup=col, showlegend=False,
                                          color=get_sequence_line_col(colcount))

@@ -1,16 +1,16 @@
-import pandas as pd
-import plotly.graph_objects as go
-import plotly as pl
 import base64
-from datetime import datetime
-from commodutil import transforms
-from commodutil import dates
-from jinja2 import Environment, FileSystemLoader, PackageLoader
 import logging
 import os
+from datetime import datetime
+
+import pandas as pd
+import plotly as pl
+import plotly.graph_objects as go
+from commodutil import dates
+from commodutil import transforms
+from jinja2 import Environment, FileSystemLoader, PackageLoader
 
 default_line_col = 'khaki'
-
 
 # try to put deeper colours for recent years, lighter colours for older years
 year_col_map = {
@@ -31,9 +31,8 @@ year_col_map = {
     4: 'crimson',
 }
 
-
 # margin to use in HTML charts - make charts bigger but leave space for title
-narrow_margin = {'l':2, 'r':2, 't':30, 'b':10}
+narrow_margin = {'l': 2, 'r': 2, 't': 30, 'b': 10}
 
 
 def gen_title(df, **kwargs):
@@ -101,10 +100,10 @@ def delta_summary_str(df):
     df = df.dropna()
     val1 = df.iloc[-1]
     val2 = df.iloc[-2]
-    delta = (val1-val2).round(2)
+    delta = (val1 - val2).round(2)
     symb = '+' if delta > 0.0 else ''
 
-    s = '{}   △: {}{}'.format(val1.round(2), symb,delta)
+    s = '{}   △: {}{}'.format(val1.round(2), symb, delta)
     return s
 
 
@@ -117,12 +116,11 @@ def format_date_col(col, date_format='%d-%b'):
     """
     try:
         if isinstance(col, str):
-
             col = pd.to_datetime(col).strftime(date_format)
         if isinstance(col, pd.Timestamp):
             col = col.strftime(date_format)
     except Exception:
-        pass # ignore - just return original
+        pass  # ignore - just return original
 
     return col
 
@@ -142,11 +140,11 @@ def reindex_year_df_rel_col(df):
     colyears = [x for x in df if str(dates.curyear) in str(x)]
     if len(colyears) > 0:
         res_col = colyears[0]
-        relyear = (pd.to_datetime('{}-01-01'.format(years.get(res_col)))) # year of this column
+        relyear = (pd.to_datetime('{}-01-01'.format(years.get(res_col))))  # year of this column
 
         dft = df[colyears].dropna()
         if len(dft) > 0:
-            relcol_date = df[res_col].dropna().index[-1] # last date of this column
+            relcol_date = df[res_col].dropna().index[-1]  # last date of this column
 
             delta = last_val_date - relcol_date
             if delta.days < 10:
@@ -161,7 +159,7 @@ def reindex_year_df_rel_col(df):
 
 
 def infer_freq(df):
-    histfreq = 'D' # sometimes infer_freq returns null - assume mostly will be a daily series
+    histfreq = 'D'  # sometimes infer_freq returns null - assume mostly will be a daily series
     if df is not None:
         histfreq = pd.infer_freq(df.index)
 
@@ -282,4 +280,3 @@ def std_yr_col(df, asdict=False):
 
     # return array of colours to use - this can be passed into cufflift iplot method
     return [colmap[x] for x in df]
-

@@ -1,9 +1,11 @@
 import unittest
-import pandas as pd
+
 import cufflinks as cf
-from commodplot import commodplottrace as cptr
-from commodutil import transforms
+import pandas as pd
 import plotly.graph_objects as go
+from commodutil import transforms
+
+from commodplot import commodplottrace as cptr
 
 
 class TestCommodPlotTrace(unittest.TestCase):
@@ -29,11 +31,9 @@ class TestCommodPlotTrace(unittest.TestCase):
         t = cptr.timeseries_trace_by_year(df[df.columns[-1]], colyear=colyear)
         self.assertTrue(isinstance(t, go.Scatter))
         self.assertEqual(t.name, str(df.columns[-1]))
-        self.assertEqual(t.visible, cptr.line_visible(colyear)) # line visible should match results of line_visible()
+        self.assertEqual(t.visible, cptr.line_visible(colyear))  # line visible should match results of line_visible()
         self.assertEqual(t.line.color, cptr.get_year_line_col(colyear))
 
 
 if __name__ == '__main__':
     unittest.main()
-
-

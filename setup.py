@@ -2,7 +2,7 @@ import setuptools
 
 setuptools.setup(
     name="commodplot",
-    version="1.2.7",
+    version="1.2.8",
     author="aeorxc",
     author_email="author@example.com",
     description="common commodity plotting including seasonal charts using plotly",
@@ -21,4 +21,3 @@ setuptools.setup(
     setup_requires=['pytest-runner'],
     tests_require=['pytest'],
 )
-

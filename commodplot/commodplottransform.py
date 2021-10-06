@@ -1,5 +1,5 @@
-from commodutil import transforms
 import pandas as pd
+from commodutil import transforms
 
 
 def seasonalise(df, histfreq):
@@ -14,12 +14,12 @@ def seasonalise(df, histfreq):
     if histfreq is None:
         histfreq = pd.infer_freq(df.index)
         if histfreq is None:
-            histfreq = 'D' # sometimes infer_freq returns null - assume mostly will be a daily series
+            histfreq = 'D'  # sometimes infer_freq returns null - assume mostly will be a daily series
 
     if histfreq.startswith('W'):
-        seas = transforms.seasonalise_weekly(df, freq=histfreq  )
+        seas = transforms.seasonalise_weekly(df, freq=histfreq)
     else:
         seas = transforms.seasonailse(df)
 
-    seas = seas.dropna(how='all', axis=1) # dont plot empty years
+    seas = seas.dropna(how='all', axis=1)  # dont plot empty years
     return seas

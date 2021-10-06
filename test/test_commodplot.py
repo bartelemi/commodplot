@@ -1,9 +1,11 @@
-import unittest
 import os
+import unittest
+
 import pandas as pd
-from commodplot import commodplot
-from commodutil import forwards
 import plotly.graph_objects as go
+from commodutil import forwards
+
+from commodplot import commodplot
 
 
 class TestCommodplot(unittest.TestCase):
@@ -14,7 +16,8 @@ class TestCommodplot(unittest.TestCase):
         cl = cl.dropna(how='all', axis=1)
         fwd = pd.DataFrame([50 for x in range(12)], index=pd.date_range('2021-01-01', periods=12, freq='MS'))
 
-        res = commodplot.seas_line_plot(cl[cl.columns[-1]], fwd=fwd, shaded_range=5, visible_line_years=3, average_line=5)
+        res = commodplot.seas_line_plot(cl[cl.columns[-1]], fwd=fwd, shaded_range=5, visible_line_years=3,
+                                        average_line=5)
         self.assertTrue(isinstance(res, go.Figure))
 
         shaded_range_max = [x for x in res.data if x['name'] == '5yr Max']
@@ -75,7 +78,7 @@ class TestCommodplot(unittest.TestCase):
         dr = pd.date_range(start='2015', end='2020-12-31', freq='B')
         data = {'Q1 2019': [10 for x in dr], 2020: [20 for x in dr], 2021: [30 for x in dr], 2022: [10 for x in dr]}
         df = pd.DataFrame(data, index=dr)
-        dfs = [df for x in range(1,5)]
+        dfs = [df for x in range(1, 5)]
 
         res = commodplot.reindex_year_line_subplot(2, 2, dfs, subplot_titles=['1', '2', '3', '4'])
         self.assertTrue(isinstance(res, go.Figure))
@@ -118,7 +121,8 @@ class TestCommodplot(unittest.TestCase):
         dirname, filename = os.path.split(os.path.abspath(__file__))
         cl = pd.read_csv(os.path.join(dirname, 'test_cl.csv'), index_col=0, parse_dates=True, dayfirst=True)
         cl = cl.dropna(how='all', axis=1)[['CL_2019F', 'CL_2020G']]
-        fwd = pd.DataFrame([[50 for x in range(2)]], index=pd.date_range('2021-01-01', periods=12, freq='MS'), columns=['CL_2019F', 'CL_2020G'])
+        fwd = pd.DataFrame([[50 for x in range(2)]], index=pd.date_range('2021-01-01', periods=12, freq='MS'),
+                           columns=['CL_2019F', 'CL_2020G'])
 
         res = commodplot.line_plot(cl, fwd=fwd, title='Test')
         self.assertTrue(isinstance(res, go.Figure))
@@ -127,8 +131,9 @@ class TestCommodplot(unittest.TestCase):
         dirname, filename = os.path.split(os.path.abspath(__file__))
         cl = pd.read_csv(os.path.join(dirname, 'test_cl.csv'), index_col=0, parse_dates=True, dayfirst=True)
         cl = cl.dropna(how='all', axis=1)[['CL_2020F', 'CL_2020G']]
-        cl = cl.rename(columns={'CL_2020F' : 'A', 'CL_2020G' : 'B'})
-        fwd = pd.DataFrame([[50 for x in range(2)]], index=pd.date_range('2021-01-01', periods=12, freq='MS'), columns=['A', 'B'])
+        cl = cl.rename(columns={'CL_2020F': 'A', 'CL_2020G': 'B'})
+        fwd = pd.DataFrame([[50 for x in range(2)]], index=pd.date_range('2021-01-01', periods=12, freq='MS'),
+                           columns=['A', 'B'])
 
         res = commodplot.line_plot(cl, fwd=fwd, title='Test')
         self.assertTrue(isinstance(res, go.Figure))
@@ -136,5 +141,3 @@ class TestCommodplot(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
-
-

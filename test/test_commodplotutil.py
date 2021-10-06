@@ -1,15 +1,17 @@
+import os
 import unittest
-import plotly.express as px
+
 import cufflinks as cf
 import pandas as pd
+import plotly.express as px
+
 from commodplot import commodplotutil as cpu
-import os
 
 
 class TestCommodPlotUtil(unittest.TestCase):
 
     def test_delta_summary_str(self):
-        df = cf.datagen.lines(2,1000)
+        df = cf.datagen.lines(2, 1000)
         col = df.columns[0]
 
         m1 = df.iloc[-1, 0]
@@ -54,7 +56,7 @@ class TestCommodPlotUtil(unittest.TestCase):
         if os.path.exists(test_out_loc):
             os.remove(test_out_loc)
 
-        data = { 'name' : 'test' }
+        data = {'name': 'test'}
 
         f = cpu.render_html(data, 'base.html', 'test.html', package_loader_name='commodplot')
 
@@ -65,5 +67,3 @@ class TestCommodPlotUtil(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
-
-

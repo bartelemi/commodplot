@@ -1,13 +1,15 @@
+import itertools
+
+import cufflinks as cf
 import pandas as pd
 import plotly as py
-import cufflinks as cf
-import itertools
 import plotly.graph_objects as go
-from plotly.subplots import make_subplots
-from commodplot import commodplotutil as cpu
-from commodplot import commodplottrace as cptr
-from commodutil import transforms
 from commodutil import dates
+from commodutil import transforms
+from plotly.subplots import make_subplots
+
+from commodplot import commodplottrace as cptr
+from commodplot import commodplotutil as cpu
 
 
 def seas_line_plot(df, fwd=None, **kwargs):
