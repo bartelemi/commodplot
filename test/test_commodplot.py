@@ -16,7 +16,7 @@ class TestCommodplot(unittest.TestCase):
         cl = cl.dropna(how='all', axis=1)
         fwd = pd.DataFrame([50 for x in range(12)], index=pd.date_range('2021-01-01', periods=12, freq='MS'))
 
-        res = commodplot.seas_line_plot(cl[cl.columns[-1]], fwd=fwd, shaded_range=5, visible_line_years=3,
+        res = commodplot.seas_line_plot(cl[cl.columns[-1]], fwd=fwd, shaded_range=(2014, 2019), visible_line_years=3,
                                         average_line=5)
         self.assertTrue(isinstance(res, go.Figure))
 

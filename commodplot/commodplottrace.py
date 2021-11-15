@@ -126,12 +126,17 @@ def shaded_range_traces(seas, shaded_range, showlegend=True):
     :return:
     """
     r, rangeyr = min_max_mean_range(seas, shaded_range)
+    if isinstance(shaded_range, int):
+        name = '%syr' % rangeyr
+    else:
+        name = '%s-%s' % (str(shaded_range[0])[-2:], str(shaded_range[1])[-2:])
+
     if rangeyr is not None:
         traces = []
         max_trace = go.Scatter(x=r.index,
                                y=r['max'].values,
                                fill=None,
-                               name='%syr Max' % rangeyr,
+                               name='%s Max' % name,
                                mode='lines',
                                line_color='lightsteelblue',
                                line_width=0.1,
@@ -141,7 +146,7 @@ def shaded_range_traces(seas, shaded_range, showlegend=True):
         min_trace = go.Scatter(x=r.index,
                                y=r['min'].values,
                                fill='tonexty',
-                               name='%syr Min' % rangeyr,
+                               name='%s Min' % name,
                                mode='lines',
                                line_color='lightsteelblue',
                                line_width=0.1,
