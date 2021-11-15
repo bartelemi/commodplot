@@ -40,7 +40,9 @@ def seas_line_plot(df, fwd=None, **kwargs):
     title = cpu.gen_title(df, **kwargs)
     legend = go.layout.Legend(font=dict(size=10))
     yaxis_title = kwargs.get('yaxis_title', None)
-    fig.update_layout(title=title, title_x=0.01, xaxis_tickformat='%b', yaxis_title=yaxis_title, legend=legend)
+    hovermode = kwargs.get('hovermode', 'closest')
+    fig.update_layout(title=title, title_x=0.01, xaxis_tickformat='%b', yaxis_title=yaxis_title, legend=legend,
+                      hovermode=hovermode)
 
     return fig
 
@@ -341,8 +343,10 @@ def reindex_year_line_subplot(rows, cols, dfs, **kwargs):
 
     legend = go.layout.Legend(font=dict(size=10))
     yaxis_title = kwargs.get('yaxis_title', None)
+    hovermode = kwargs.get('hovermode', 'closest')
     title = kwargs.get('title', '')
-    fig.update_layout(title=title, title_x=0.01, xaxis_tickformat='%b-%y', yaxis_title=yaxis_title, legend=legend)
+    fig.update_layout(title=title, title_x=0.01, xaxis_tickformat='%b-%y', yaxis_title=yaxis_title, legend=legend,
+                      hovermode=hovermode)
 
     fig.update_xaxes(type="date")
 
@@ -358,5 +362,6 @@ def line_plot(df, fwd=None, **kwargs):
     title = cpu.gen_title(df, inc_change_sum=False, **kwargs)
     legend = go.layout.Legend(font=dict(size=10))
     yaxis_title = kwargs.get('yaxis_title', None)
-    fig.update_layout(title=title, title_x=0.01, yaxis_title=yaxis_title, legend=legend)
+    hovermode = kwargs.get('hovermode', 'closest')
+    fig.update_layout(title=title, title_x=0.01, yaxis_title=yaxis_title, legend=legend, hovermode=hovermode)
     return fig
