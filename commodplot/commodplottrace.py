@@ -200,7 +200,7 @@ def timeseries_to_seas_trace(seas, text, dash=None, showlegend=True, visible_lin
                                      dash=dash,
                                      width=get_year_line_width(col)),
                            showlegend=showlegend,
-                           legendgroup=col)
+                           legendgroup=str(col))
         traces.append(trace)
 
     return traces
