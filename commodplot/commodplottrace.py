@@ -229,7 +229,7 @@ def timeseries_to_reindex_year_trace(dft, text, dash=None, current_select_year=N
                                      dash=dash,
                                      width=width),
                            showlegend=showlegend,
-                           legendgroup=col)
+                           legendgroup=str(col))
         traces.append(trace)
 
     return traces
@@ -338,7 +338,7 @@ def timeseries_trace(series: pd.Series, **kwargs) -> go.Scatter:
             color=kwargs.get('color'),
             dash=kwargs.get('dash')
         ),
-        legendgroup=kwargs.get('legendgroup'),
+        legendgroup=str(kwargs.get('legendgroup')),
         showlegend=kwargs.get('showlegend')
     )
     return t

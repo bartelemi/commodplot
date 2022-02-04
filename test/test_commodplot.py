@@ -20,9 +20,9 @@ class TestCommodplot(unittest.TestCase):
                                         average_line=5)
         self.assertTrue(isinstance(res, go.Figure))
 
-        shaded_range_max = [x for x in res.data if x['name'] == '5yr Max']
+        shaded_range_max = [x for x in res.data if 'Max' in x['name']]
         self.assertEqual(len(shaded_range_max), 1)
-        shaded_range_min = [x for x in res.data if x['name'] == '5yr Min']
+        shaded_range_min = [x for x in res.data if 'Min' in x['name']]
         self.assertEqual(len(shaded_range_min), 1)
 
         solid_line = [x for x in res.data if x['name'] == '2020']
