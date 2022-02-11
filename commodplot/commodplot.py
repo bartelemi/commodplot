@@ -11,6 +11,8 @@ from plotly.subplots import make_subplots
 from commodplot import commodplottrace as cptr
 from commodplot import commodplotutil as cpu
 
+preset_margins = {'l': 0, 'r': 0, 't': 40, 'b': 0}
+
 
 def seas_line_plot(df, fwd=None, **kwargs):
     """
@@ -38,11 +40,11 @@ def seas_line_plot(df, fwd=None, **kwargs):
     fig.layout.xaxis.tickvals = pd.date_range(start=str(dates.curyear), periods=12, freq='MS')
 
     title = cpu.gen_title(df, **kwargs)
-    legend = go.layout.Legend(font=dict(size=10))
+    legend = go.layout.Legend(font=dict(size=10), traceorder='reversed')
     yaxis_title = kwargs.get('yaxis_title', None)
-    hovermode = kwargs.get('hovermode', 'closest')
+    hovermode = kwargs.get('hovermode', 'x')
     fig.update_layout(title=title, title_x=0.01, xaxis_tickformat='%b', yaxis_title=yaxis_title, legend=legend,
-                      hovermode=hovermode)
+                      hovermode=hovermode, margin=preset_margins)
 
     return fig
 
@@ -91,7 +93,7 @@ def seas_line_subplot(rows, cols, df, fwd=None, **kwargs):
     legend = go.layout.Legend(font=dict(size=10))
     fig.update_xaxes(tickvals=pd.date_range(start=str(dates.curyear), periods=12, freq='MS'), tickformat='%b')
     title = kwargs.get('title', '')
-    fig.update_layout(title=title, title_x=0.01, xaxis_tickformat='%b', legend=legend)
+    fig.update_layout(title=title, title_x=0.01, xaxis_tickformat='%b', legend=legend, margin=preset_margins)
     return fig
 
 
@@ -122,7 +124,7 @@ def seas_box_plot(hist, fwd=None, **kwargs):
 
     fig = go.Figure(data=data)
     title = kwargs.get('title', '')
-    fig.update_layout(title=title, title_x=0.01)
+    fig.update_layout(title=title, title_x=0.01, margin=preset_margins)
 
     return fig
 
@@ -203,7 +205,7 @@ def forward_history_plot(df, title=None, **kwargs):
     fig['data'][0]['line']['width'] = 2.2  # make latest line thicker
     legend = go.layout.Legend(font=dict(size=10))
     yaxis_title = kwargs.get('yaxis_title', None)
-    fig.update_layout(title=title, title_x=0.01, xaxis_tickformat='%b-%y', yaxis_title=yaxis_title, legend=legend)
+    fig.update_layout(title=title, title_x=0.01, xaxis_tickformat='%b-%y', yaxis_title=yaxis_title, legend=legend, margin=preset_margins)
     return fig
 
 
@@ -223,7 +225,7 @@ def bar_line_plot(df, linecol='Total', **kwargs):
     yaxis_title = kwargs.get('yaxis_title', None)
     yaxis_range = kwargs.get('yaxis_range', None)
     title = kwargs.get('title', None)
-    fig.update_layout(title=title, title_x=0.01, xaxis_title='Date', yaxis_title=yaxis_title)
+    fig.update_layout(title=title, title_x=0.01, xaxis_title='Date', yaxis_title=yaxis_title, margin=preset_margins)
     if yaxis_range is not None:
         fig.update_layout(yaxis=dict(range=yaxis_range))
     return fig
@@ -252,7 +254,7 @@ def diff_plot(df, **kwargs):
         fig.add_trace(go.Bar(x=df.index, y=df[col], name=col), row=2, col=1)
 
     title = kwargs.get('title', '')
-    fig.update_layout(title_text=title, title_x=0.01)
+    fig.update_layout(title_text=title, title_x=0.01, margin=preset_margins)
     return fig
 
 
@@ -281,7 +283,7 @@ def reindex_year_line_plot(df, **kwargs):
 
     legend = go.layout.Legend(font=dict(size=10))
     yaxis_title = kwargs.get('yaxis_title', None)
-    fig.update_layout(title=title, title_x=0.01, xaxis_tickformat='%b-%y', yaxis_title=yaxis_title, legend=legend)
+    fig.update_layout(title=title, title_x=0.01, xaxis_tickformat='%b-%y', yaxis_title=yaxis_title, legend=legend, margin=preset_margins)
     # zoom into last 3 years
     fig.update_xaxes(type="date",
                      range=[dft.tail(365 * 3).index[0].strftime('%Y-%m-%d'), dft.index[-1].strftime('%Y-%m-%d')])
@@ -346,7 +348,7 @@ def reindex_year_line_subplot(rows, cols, dfs, **kwargs):
     hovermode = kwargs.get('hovermode', 'closest')
     title = kwargs.get('title', '')
     fig.update_layout(title=title, title_x=0.01, xaxis_tickformat='%b-%y', yaxis_title=yaxis_title, legend=legend,
-                      hovermode=hovermode)
+                      hovermode=hovermode, margin=preset_margins)
 
     fig.update_xaxes(type="date")
 
