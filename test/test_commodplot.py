@@ -74,6 +74,13 @@ class TestCommodplot(unittest.TestCase):
         res = commodplot.stacked_area_chart(cl)
         self.assertTrue(isinstance(res, go.Figure))
 
+    def test_stack_bar_chart(self):
+        dirname, filename = os.path.split(os.path.abspath(__file__))
+        cl = pd.read_csv(os.path.join(dirname, 'test_cl_chlo.csv'), index_col=0, parse_dates=True, dayfirst=True)
+
+        res = commodplot.bar_chart(cl, barmode='stack')
+        self.assertTrue(isinstance(res, go.Figure))
+
     def test_reindex_year_line_subplot(self):
         dr = pd.date_range(start='2015', end='2020-12-31', freq='B')
         data = {'Q1 2019': [10 for x in dr], 2020: [20 for x in dr], 2021: [30 for x in dr], 2022: [10 for x in dr]}

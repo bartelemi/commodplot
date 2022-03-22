@@ -314,6 +314,21 @@ def stacked_area_chart(df, **kwargs):
     return fig
 
 
+def bar_chart(df, **kwargs):
+    fig = go.Figure()
+
+    for col in df.columns:
+        fig.add_trace(go.Bar(x=df.index, y=df[col], name=col))
+
+    hovermode = kwargs.get('hovermode', 'x')
+    fig.update_layout(title=kwargs.get('title', ''), hovermode=hovermode)
+    barmode = kwargs.get('barmode', None)
+    if barmode:
+        fig.update_layout(barmode=barmode)
+
+    return fig
+
+
 def reindex_year_line_subplot(rows, cols, dfs, **kwargs):
     fig = make_subplots(
         cols=cols,
