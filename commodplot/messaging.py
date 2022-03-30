@@ -7,6 +7,7 @@ from email.utils import make_msgid
 from os import environ
 from pathlib import Path
 from smtplib import SMTP, SMTPException
+from typing import Union
 
 logger = logging.getLogger(__name__)
 
@@ -56,7 +57,7 @@ class EmailBuilder:
         self.message.attach(part)
         return self
 
-    def attach_image(self, image: str | bytes, content_id: str = None):
+    def attach_image(self, image: Union[str, bytes], content_id: str = None):
         """Attach image part to the message, optionally set the content-id header."""
         content_id = content_id or make_msgid(domain="energy.local")
         part = MIMEImage(image)
